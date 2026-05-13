@@ -1,0 +1,101 @@
+# Production deployment — институт.
+# Все данные хранятся в /var/library/ на хосте (bind mount),
+# образы тянутся из локального registry или загружены через `docker load`.
+# Запуск: ./scripts/install.sh   (или: docker compose -f docker-compose.prod.yml up -d)
+
+name: library
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    stop_grace_period: 60s
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-library}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-library}
+      # Безопасные дефолты под reliability — fsync включён, синхронные коммиты включены
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      # Bind mount на путь хоста — данные переживают пересоздание контейнера.
+      - ${STORAGE_ROOT:-/var/library}/pg-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-library} -d ${POSTGRES_DB:-library}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    # Внутреннее имя в сети, наружу не торчит
+    expose:
+      - "5432"
+
+  api:
+    image: ${REGISTRY:-localhost}/library-api:${TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-library}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-library}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
+      JWT_EXPIRY_HOURS: ${JWT_EXPIRY_HOURS:-24}
+      REFRESH_TOKEN_EXPIRY_DAYS: ${REFRESH_TOKEN_EXPIRY_DAYS:-30}
+      STORAGE_PATH: /var/library
+      MIGRATIONS_PATH: /app/migrations
+      API_PORT: 2020
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-*}
+    volumes:
+      - ${STORAGE_ROOT:-/var/library}/files:/var/library
+    expose:
+      - "2020"
+
+  frontend:
+    image: ${REGISTRY:-localhost}/library-frontend:${TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      # SSR-запросы летят внутрь сети к api
+      API_BASE_INTERNAL: http://api:2020/api
+      # Клиентские запросы — через nginx по тому же домену
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-/api}
+    expose:
+      - "2026"
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+      - frontend
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      # X-Accel-Redirect: nginx читает файлы напрямую с диска хоста
+      - ${STORAGE_ROOT:-/var/library}/files:/var/library:ro
+      # SSL-сертификаты (если есть)
+      - ${STORAGE_ROOT:-/var/library}/ssl:/etc/nginx/ssl:ro
+
+  # Сайдкар бэкапов: alpine + cron + pg_dump.
+  # Запускает /scripts/backup.sh каждый день в 03:00 (см. crontab).
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-library}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-library}
+      PGHOST: postgres
+      BACKUP_CRON: ${BACKUP_CRON:-0 3 * * *}
+    volumes:
+      - ./scripts/backup-entrypoint.sh:/usr/local/bin/backup-entrypoint.sh:ro
+      - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
+      - ${STORAGE_ROOT:-/var/library}/backups:/backups
+    entrypoint: ["/usr/local/bin/backup-entrypoint.sh"]

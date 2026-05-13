@@ -1,0 +1,405 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Библиотечный скевоморфизм: бумага, дерево, корешки, ленты-закладки. */
+
+@layer base {
+  :root {
+    /* Светлая тема — атмосфера читального зала. */
+    --background: 252 250 245;          /* #fcfaf5 — старая бумага / слоновая кость */
+    --foreground: 45 52 54;              /* #2d3436 — угольный, как типографская краска */
+
+    --card: 255 253 247;                 /* кремовая бумага, чуть светлее фона */
+    --card-foreground: 45 52 54;
+
+    --popover: 255 253 247;
+    --popover-foreground: 45 52 54;
+
+    --primary: 22 171 101;               /* #16ab65 — фирменный зелёный (тканевые закладки, корешки) */
+    --primary-foreground: 255 253 247;
+
+    --secondary: 70 56 42;               /* #46382a — тёплое дерево/кожа */
+    --secondary-foreground: 252 250 245;
+
+    --muted: 244 238 224;                /* #f4eee0 — выцветшая бумага */
+    --muted-foreground: 107 95 78;       /* #6b5f4e — потёртые чернила */
+
+    --accent: 22 171 101;
+    --accent-foreground: 255 253 247;
+
+    --destructive: 178 53 49;            /* #b23531 — киноварь */
+    --destructive-foreground: 252 250 245;
+
+    --border: 218 207 184;               /* #dacfb8 — выцветший край бумаги */
+    --input: 218 207 184;
+    --ring: 22 171 101;
+
+    /* Доменные поверхности */
+    --paper: 252 250 245;
+    --paper-deep: 246 240 225;           /* углубление-ниша (поиск) */
+    --ink: 45 52 54;
+    --wood: 70 56 42;                    /* корешок шкафа */
+    --ribbon: 22 171 101;
+    --ribbon-shadow: 0 0 0 / 0.25;
+
+    --radius: 0.5rem;                     /* академизм: углы скромнее, не округлые */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
+    --font-family: var(--font-sans);
+  }
+
+  .dark {
+    /* Тёмная библиотека — благородное дерево + кожа + латунь. */
+    --background: 34 26 19;              /* #221a13 — тёмный орех */
+    --foreground: 232 222 198;           /* #e8dec6 — пожелтевшая страница */
+
+    --card: 47 38 28;                    /* #2f261c — кожа переплёта */
+    --card-foreground: 232 222 198;
+
+    --popover: 47 38 28;
+    --popover-foreground: 232 222 198;
+
+    --primary: 34 197 124;
+    --primary-foreground: 34 26 19;
+
+    --secondary: 60 48 35;
+    --secondary-foreground: 232 222 198;
+
+    --muted: 56 45 33;
+    --muted-foreground: 178 162 130;
+
+    --accent: 34 197 124;
+    --accent-foreground: 34 26 19;
+
+    --destructive: 196 72 64;
+    --destructive-foreground: 252 250 245;
+
+    --border: 75 60 44;
+    --input: 75 60 44;
+    --ring: 34 197 124;
+
+    --paper: 34 26 19;
+    --paper-deep: 24 18 12;
+    --ink: 232 222 198;
+    --wood: 90 70 50;
+    --ribbon: 34 197 124;
+    --ribbon-shadow: 0 0 0 / 0.5;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    /* Тонкая линовка ежедневника — фоновая бумага в полоску, очень мягко. */
+    background-color: rgb(var(--background));
+    background-image:
+      linear-gradient(to bottom, transparent 31px, rgba(45, 52, 54, 0.045) 32px),
+      radial-gradient(ellipse at top, rgba(22, 171, 101, 0.03), transparent 65%);
+    background-size: 100% 32px, 100% 100%;
+    background-attachment: fixed;
+  }
+
+  .dark html {
+    background-image:
+      linear-gradient(to bottom, transparent 31px, rgba(232, 222, 198, 0.04) 32px),
+      radial-gradient(ellipse at top, rgba(22, 171, 101, 0.05), transparent 65%);
+  }
+
+  body {
+    @apply text-foreground;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Serif для заголовков — академический Playfair Display. */
+  h1, h2, h3, h4, h5, h6,
+  .font-serif {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    line-height: 1.2;
+    color: rgb(var(--ink));
+    letter-spacing: -0.005em;
+  }
+  h1 { font-weight: 700; }
+
+  /* Селект — приглушённое золото-перо. */
+  ::selection {
+    background-color: rgba(22, 171, 101, 0.22);
+    color: rgb(var(--ink));
+  }
+}
+
+@layer components {
+  /* === Контейнер === */
+  .page-container {
+    @apply container mx-auto px-6 lg:px-8;
+    max-width: 1280px;
+  }
+
+  /* === Типографика === */
+  .serif {
+    font-family: var(--font-serif);
+  }
+  .small-caps {
+    font-variant: small-caps;
+    letter-spacing: 0.12em;
+    text-transform: lowercase;
+  }
+  .eyebrow {
+    @apply small-caps text-xs font-semibold;
+    color: rgb(var(--primary));
+  }
+
+  /* === Орнаментальные разделители === */
+  .divider-double {
+    height: 6px;
+    border-top: 1px solid rgb(var(--border));
+    border-bottom: 1px solid rgb(var(--border));
+    background: transparent;
+  }
+  .divider-ornament {
+    @apply flex items-center gap-4 my-8 text-muted-foreground;
+  }
+  .divider-ornament::before,
+  .divider-ornament::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid rgb(var(--border));
+    box-shadow: 0 2px 0 rgb(var(--border));
+    height: 1px;
+  }
+  .divider-ornament-glyph {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: rgb(var(--muted-foreground));
+  }
+
+  /* === Лента-закладка (book ribbon) === */
+  .ribbon {
+    position: relative;
+  }
+  .ribbon::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 1.5rem;
+    width: 18px;
+    height: 38px;
+    background: linear-gradient(180deg, rgb(var(--ribbon)) 0%, rgb(var(--ribbon)) 70%, transparent 70%);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%);
+    box-shadow: 1px 1px 3px rgba(var(--ribbon-shadow));
+    z-index: 1;
+  }
+  .ribbon-flat::before {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+    height: 26px;
+    width: 14px;
+  }
+
+  /* === Кнопки === */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-md font-medium text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98];
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.25) inset,
+      0 2px 6px rgba(22, 171, 101, 0.25),
+      0 1px 0 rgba(0, 0, 0, 0.08);
+  }
+  .btn-outline {
+    @apply btn bg-card text-foreground border border-border hover:bg-muted;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-foreground hover:bg-muted;
+  }
+  .btn-danger {
+    @apply btn bg-destructive text-destructive-foreground hover:opacity-90;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  /* === Поля ввода === */
+  .input {
+    @apply w-full px-4 py-2.5 bg-card border border-input rounded-md outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  /* === Поиск-ниша (прорезь в столе) === */
+  .search-niche {
+    position: relative;
+    background-color: rgb(var(--paper-deep));
+    border-radius: 999px;
+    box-shadow:
+      inset 0 2px 4px rgba(0, 0, 0, 0.12),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.6),
+      0 1px 0 rgba(255, 255, 255, 0.6);
+    border: 1px solid rgb(var(--border));
+  }
+  .dark .search-niche {
+    box-shadow:
+      inset 0 2px 6px rgba(0, 0, 0, 0.55),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .search-niche input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font-serif);
+    font-style: italic;
+  }
+  .search-niche input:focus {
+    box-shadow: none;
+  }
+
+  /* === Карточки-книги (физический объём) === */
+  .book-card {
+    @apply bg-card rounded-md transition-all duration-300;
+    box-shadow:
+      2px 2px 10px rgba(0, 0, 0, 0.1),
+      inset 0 0 1px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+  .book-card:hover {
+    transform: translateY(-6px) rotate(-0.4deg);
+    box-shadow:
+      6px 10px 24px rgba(0, 0, 0, 0.18),
+      inset 0 0 1px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  .dark .book-card {
+    box-shadow:
+      2px 2px 12px rgba(0, 0, 0, 0.55),
+      inset 0 0 1px rgba(255, 255, 255, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* Универсальная "бумажная" карточка контента */
+  .paper-card {
+    @apply bg-card rounded-md p-6;
+    box-shadow:
+      2px 2px 10px rgba(0, 0, 0, 0.08),
+      inset 0 0 1px rgba(0, 0, 0, 0.04);
+  }
+
+  /* legacy alias, чтоб не ломать старые шаблоны */
+  .card { @apply paper-card; }
+  .card-flat {
+    @apply bg-card rounded-md border border-border p-6;
+  }
+  .card-hover {
+    @apply transition-all duration-200;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 6px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Header теперь — плавающее pill-меню, стилизованное в Header.vue.
+     Спейсер резервирует место под pill (top 20px + height 56px ≈ 96px). */
+  .app-header-spacer {
+    height: 96px;
+  }
+  @media (max-width: 640px) {
+    .app-header-spacer {
+      height: 80px;
+    }
+  }
+
+  /* === Sidebar — стенка шкафа из дерева, ссылки как корешки книг === */
+  .app-sidebar {
+    background-color: rgb(var(--wood));
+    color: rgb(var(--paper));
+    border-right: 1px solid rgba(0, 0, 0, 0.25);
+    box-shadow:
+      inset -3px 0 6px rgba(0, 0, 0, 0.25),
+      inset 1px 0 0 rgba(255, 255, 255, 0.04);
+  }
+  .app-sidebar .sidebar-title {
+    color: rgb(var(--paper));
+  }
+  .app-sidebar .sidebar-muted {
+    color: rgba(252, 250, 245, 0.55);
+  }
+  .book-spine {
+    @apply relative flex items-center gap-3 pl-4 pr-3 py-3 rounded-sm transition-all;
+    background: linear-gradient(
+      180deg,
+      rgba(252, 250, 245, 0.06) 0%,
+      rgba(252, 250, 245, 0.02) 50%,
+      rgba(0, 0, 0, 0.12) 100%
+    );
+    border-left: 3px solid transparent;
+    box-shadow:
+      inset 1px 0 0 rgba(255, 255, 255, 0.06),
+      inset -1px 0 0 rgba(0, 0, 0, 0.2);
+    color: rgba(252, 250, 245, 0.85);
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+  }
+  .book-spine:hover {
+    background: linear-gradient(
+      180deg,
+      rgba(252, 250, 245, 0.1) 0%,
+      rgba(252, 250, 245, 0.05) 50%,
+      rgba(0, 0, 0, 0.12) 100%
+    );
+    color: rgb(var(--paper));
+    transform: translateX(2px);
+  }
+  .book-spine.router-link-active,
+  .book-spine.router-link-exact-active {
+    border-left-color: rgb(var(--primary));
+    background: linear-gradient(
+      180deg,
+      rgba(22, 171, 101, 0.18) 0%,
+      rgba(22, 171, 101, 0.08) 60%,
+      rgba(0, 0, 0, 0.14) 100%
+    );
+    color: rgb(var(--paper));
+    box-shadow:
+      inset 3px 0 0 rgb(var(--primary)),
+      inset -1px 0 0 rgba(0, 0, 0, 0.25),
+      0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* === Прочее === */
+  .section-title {
+    font-family: var(--font-serif);
+    @apply text-3xl md:text-4xl tracking-tight mb-6;
+    font-weight: 700;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-1 rounded text-xs font-medium;
+  }
+  .badge-success {
+    @apply badge bg-primary/10 text-primary;
+  }
+  .badge-warning {
+    @apply badge bg-yellow-100 text-yellow-800;
+  }
+}
+
+@layer utilities {
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .icon-primary { color: rgb(var(--primary)); }
+  .text-ink { color: rgb(var(--ink)); }
+  .bg-paper { background-color: rgb(var(--paper)); }
+  .bg-paper-deep { background-color: rgb(var(--paper-deep)); }
+  .bg-wood { background-color: rgb(var(--wood)); }
+}

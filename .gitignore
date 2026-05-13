@@ -1,0 +1,35 @@
+# Go
+api/bin/
+api/tmp/
+*.exe
+*.dll
+*.so
+*.dylib
+api/library
+
+# Node / Nuxt
+node_modules/
+frontend/.nuxt/
+frontend/.output/
+frontend/.cache/
+frontend/dist/
+# components/ui/ — НЕ игнорируем: shadcn-философия "you own the code",
+# компоненты копируются в проект и кастомизируются под нужды
+
+# Env
+.env
+*.env.local
+*.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Storage (runtime files outside repo, but ignore local mounts)
+storage/
+
+# Logs
+*.log
+logs/

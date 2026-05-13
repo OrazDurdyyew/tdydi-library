@@ -1,0 +1,27 @@
+{
+  "site": {
+    "name": "Elektron kitaphana"
+  },
+  "home": {
+    "title": "Elektron kitaphana",
+    "subtitle": "Bölümler, kitaplar, döwürleýin neşirler",
+    "new_books": "Täze kitaplar",
+    "no_books_yet": "Kitaplar entek goşulmadyk."
+  },
+  "common": {
+    "save": "Ýatda saklamak",
+    "cancel": "Goýbolsun etmek",
+    "delete": "Pozmak",
+    "edit": "Üýtgetmek",
+    "search": "Gözleg",
+    "loading": "Ýüklenýär...",
+    "back": "Yza",
+    "see_all": "Hemmesi"
+  },
+  "nav": {
+    "home": "Baş sahypa",
+    "books": "Kitaplar",
+    "periodicals": "Döwürleýin neşirler",
+    "news": "Habarlar"
+  }
+}

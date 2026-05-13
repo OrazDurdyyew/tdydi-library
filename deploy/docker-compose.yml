@@ -1,0 +1,53 @@
+# Production deployment
+# Использует готовые Docker-образы из приватного registry.
+# Запуск: docker compose up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-library}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-library}
+      POSTGRES_DB: ${POSTGRES_DB:-library}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-library}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: ${REGISTRY:-localhost}/library-api:${TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-library}:${POSTGRES_PASSWORD:-library}@postgres:5432/${POSTGRES_DB:-library}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRY_HOURS: ${JWT_EXPIRY_HOURS:-24}
+      REFRESH_TOKEN_EXPIRY_DAYS: ${REFRESH_TOKEN_EXPIRY_DAYS:-30}
+      STORAGE_PATH: /var/library
+      API_PORT: 2020
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:2026}
+    volumes:
+      - library-storage:/var/library
+    ports:
+      - "${API_PORT:-2020}:2020"
+
+  frontend:
+    image: ${REGISTRY:-localhost}/library-frontend:${TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-/api}
+    ports:
+      - "${FRONTEND_PORT:-2026}:2026"
+
+volumes:
+  postgres-data:
+  library-storage:

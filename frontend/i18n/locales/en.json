@@ -1,0 +1,27 @@
+{
+  "site": {
+    "name": "Digital Library"
+  },
+  "home": {
+    "title": "Digital Library",
+    "subtitle": "Sections, books, periodicals",
+    "new_books": "New arrivals",
+    "no_books_yet": "No books yet."
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "loading": "Loading...",
+    "back": "Back",
+    "see_all": "View all"
+  },
+  "nav": {
+    "home": "Home",
+    "books": "Books",
+    "periodicals": "Periodicals",
+    "news": "News"
+  }
+}
