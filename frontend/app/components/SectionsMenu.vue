@@ -1,50 +1,32 @@
 <script setup lang="ts">
 import { ChevronDown } from 'lucide-vue-next'
-
-interface MenuSection {
-  id: number
-  slug: string
-  name_tm: string
-  name_ru: string
-  name_en: string
-  children?: MenuSection[]
-}
-
-interface MenuPage {
-  slug: string
-  title_tm: string
-  title_ru: string
-  title_en: string
-}
+import type { MenuSection, MenuPage } from '~/composables/useMenu'
 
 defineProps<{ mobile?: boolean }>()
 
-const api = useApi()
-const { locale, t } = useI18n()
+const { t } = useI18n()
+const loc = useLocalized()
+const { data: menu } = await useMenu()
 
-const { data: menu } = await useAsyncData('public-menu', () =>
-  api.get<{ sections: MenuSection[]; pages: MenuPage[] }>('/menu').catch(() => ({ sections: [], pages: [] }))
-)
-
-function sectionName(s: MenuSection): string {
-  if (locale.value === 'tm') return s.name_tm
-  if (locale.value === 'en') return s.name_en
-  return s.name_ru
+function sectionName(s: MenuSection) {
+  return loc(s, 'name')
 }
-
-function pageTitle(p: MenuPage): string {
-  if (locale.value === 'tm') return p.title_tm
-  if (locale.value === 'en') return p.title_en
-  return p.title_ru
+function pageTitle(p: MenuPage) {
+  return loc(p, 'title')
 }
 </script>
 
 <template>
-  <!-- ===== Desktop: горизонтальный список внутри pill-а ===== -->
-  <ul v-if="!mobile" class="hidden md:flex items-center gap-1">
+  <!-- ===== Desktop ===== -->
+  <ul v-if="!mobile" class="hidden md:flex items-center gap-0.5 h-12">
     <li>
       <NuxtLinkLocale to="/" class="nav-link" exact-active-class="nav-link-active">
         {{ t('nav.home') }}
+      </NuxtLinkLocale>
+    </li>
+    <li>
+      <NuxtLinkLocale to="/books" class="nav-link" active-class="nav-link-active">
+        {{ t('nav.books') }}
       </NuxtLinkLocale>
     </li>
 
@@ -55,19 +37,16 @@ function pageTitle(p: MenuPage): string {
     >
       <NuxtLinkLocale
         :to="`/sections/${section.slug}`"
-        class="nav-link"
+        class="nav-link inline-flex items-center gap-1"
         active-class="nav-link-active"
       >
-        <span class="inline-flex items-center gap-1">
-          {{ sectionName(section) }}
-          <ChevronDown
-            v-if="section.children && section.children.length"
-            class="w-3.5 h-3.5 opacity-60 transition-transform group-hover:rotate-180"
-          />
-        </span>
+        {{ sectionName(section) }}
+        <ChevronDown
+          v-if="section.children && section.children.length"
+          class="w-3.5 h-3.5 opacity-50 transition-transform group-hover:rotate-180"
+        />
       </NuxtLinkLocale>
 
-      <!-- Подменю -->
       <div
         v-if="section.children && section.children.length"
         class="nav-dropdown"
@@ -83,29 +62,41 @@ function pageTitle(p: MenuPage): string {
       </div>
     </li>
 
+    <li>
+      <NuxtLinkLocale to="/periodicals" class="nav-link" active-class="nav-link-active">
+        {{ t('nav.periodicals') }}
+      </NuxtLinkLocale>
+    </li>
+    <li>
+      <NuxtLinkLocale to="/news" class="nav-link" active-class="nav-link-active">
+        {{ t('nav.news') }}
+      </NuxtLinkLocale>
+    </li>
+
     <li v-for="page in menu?.pages" :key="page.slug">
-      <NuxtLinkLocale
-        :to="`/${page.slug}`"
-        class="nav-link"
-        active-class="nav-link-active"
-      >
+      <NuxtLinkLocale :to="`/${page.slug}`" class="nav-link" active-class="nav-link-active">
         {{ pageTitle(page) }}
       </NuxtLinkLocale>
     </li>
   </ul>
 
-  <!-- ===== Mobile: вертикальный список ===== -->
-  <ul v-else class="flex flex-col">
+  <!-- ===== Mobile ===== -->
+  <ul v-else class="flex flex-col gap-0.5">
     <li>
-      <NuxtLinkLocale to="/" class="nav-link nav-link-mobile" exact-active-class="nav-link-active">
+      <NuxtLinkLocale to="/" class="nav-link-mobile" exact-active-class="nav-link-active">
         {{ t('nav.home') }}
+      </NuxtLinkLocale>
+    </li>
+    <li>
+      <NuxtLinkLocale to="/books" class="nav-link-mobile" active-class="nav-link-active">
+        {{ t('nav.books') }}
       </NuxtLinkLocale>
     </li>
     <template v-for="section in menu?.sections" :key="section.id">
       <li>
         <NuxtLinkLocale
           :to="`/sections/${section.slug}`"
-          class="nav-link nav-link-mobile"
+          class="nav-link-mobile"
           active-class="nav-link-active"
         >
           {{ sectionName(section) }}
@@ -114,19 +105,35 @@ function pageTitle(p: MenuPage): string {
       <li v-for="child in section.children" :key="child.id">
         <NuxtLinkLocale
           :to="`/sections/${child.slug}`"
-          class="nav-link nav-link-mobile nav-link-sub"
+          class="nav-link-mobile nav-link-sub"
           active-class="nav-link-active"
         >
-          — {{ sectionName(child) }}
+          {{ sectionName(child) }}
         </NuxtLinkLocale>
       </li>
     </template>
+    <li>
+      <NuxtLinkLocale to="/periodicals" class="nav-link-mobile" active-class="nav-link-active">
+        {{ t('nav.periodicals') }}
+      </NuxtLinkLocale>
+    </li>
+    <li>
+      <NuxtLinkLocale to="/news" class="nav-link-mobile" active-class="nav-link-active">
+        {{ t('nav.news') }}
+      </NuxtLinkLocale>
+    </li>
+    <li>
+      <NuxtLinkLocale to="/collections" class="nav-link-mobile" active-class="nav-link-active">
+        {{ t('nav.collections') }}
+      </NuxtLinkLocale>
+    </li>
+    <li>
+      <NuxtLinkLocale to="/faq" class="nav-link-mobile" active-class="nav-link-active">
+        {{ t('nav.faq') }}
+      </NuxtLinkLocale>
+    </li>
     <li v-for="page in menu?.pages" :key="page.slug">
-      <NuxtLinkLocale
-        :to="`/${page.slug}`"
-        class="nav-link nav-link-mobile"
-        active-class="nav-link-active"
-      >
+      <NuxtLinkLocale :to="`/${page.slug}`" class="nav-link-mobile" active-class="nav-link-active">
         {{ pageTitle(page) }}
       </NuxtLinkLocale>
     </li>
@@ -135,111 +142,83 @@ function pageTitle(p: MenuPage): string {
 
 <style scoped>
 .nav-link {
-  position: relative;
   display: inline-flex;
   align-items: center;
-  height: 40px;
-  padding: 0 1rem;
-  border-radius: 999px;
-  font-family: var(--font-serif);
-  font-size: 0.98rem;
+  height: 3rem;
+  padding: 0 0.875rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: rgb(var(--ink));
+  color: rgb(var(--muted-foreground));
   white-space: nowrap;
-  text-decoration: none;
-  transition: color 160ms ease;
-}
-
-/* Тонкое подчёркивание #16ab65 при наведении и в активном состоянии */
-.nav-link::after {
-  content: '';
-  position: absolute;
-  left: 1rem;
-  right: 1rem;
-  bottom: 8px;
-  height: 1.5px;
-  background-color: rgb(var(--primary));
-  border-radius: 1px;
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  border-bottom: 2px solid transparent;
+  transition: color 150ms ease, border-color 150ms ease;
 }
 .nav-link:hover {
-  color: rgb(var(--primary));
-}
-.nav-link:hover::after {
-  transform: scaleX(1);
+  color: rgb(var(--foreground));
 }
 .nav-link-active {
   color: rgb(var(--primary));
-}
-.nav-link-active::after {
-  transform: scaleX(1);
+  border-bottom-color: rgb(var(--accent));
 }
 
-/* === Мобильный вариант === */
 .nav-link-mobile {
-  height: 44px;
-  width: 100%;
-  justify-content: flex-start;
-  border-radius: 0.75rem;
-  padding: 0 1rem;
+  display: block;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgb(var(--foreground));
+  transition: background-color 140ms ease;
 }
-.nav-link-mobile::after {
-  left: 1rem;
-  right: auto;
-  width: 16px;
-  bottom: 10px;
+.nav-link-mobile:hover {
+  background-color: rgb(var(--muted));
 }
 .nav-link-sub {
+  padding-left: 1.75rem;
   font-size: 0.9rem;
+  font-weight: 400;
   color: rgb(var(--muted-foreground));
-  padding-left: 1.5rem;
+}
+.nav-link-mobile.nav-link-active {
+  color: rgb(var(--primary));
+  background-color: rgb(var(--muted));
+  border-bottom: 0;
 }
 
-/* === Dropdown === */
+/* Dropdown */
 .nav-dropdown {
   position: absolute;
-  top: calc(100% + 0.5rem);
-  left: 50%;
-  transform: translate(-50%, 4px);
-  min-width: 240px;
-  padding: 0.5rem;
-  background-color: rgba(255, 253, 247, 0.98);
-  backdrop-filter: saturate(180%) blur(12px);
-  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  top: 100%;
+  left: 0;
+  min-width: 14rem;
+  padding: 0.375rem;
+  background-color: rgb(var(--card));
   border: 1px solid rgb(var(--border));
-  border-radius: 1rem;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+  border-radius: 0.625rem;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.1);
   opacity: 0;
   visibility: hidden;
-  pointer-events: none;
-  transition: opacity 180ms ease, transform 180ms ease, visibility 0s linear 180ms;
+  transform: translateY(4px);
+  transition: opacity 160ms ease, transform 160ms ease, visibility 0s linear 160ms;
   z-index: 50;
-}
-:global(.dark) .nav-dropdown {
-  background-color: rgba(47, 38, 28, 0.96);
 }
 .group:hover .nav-dropdown,
 .group:focus-within .nav-dropdown {
   opacity: 1;
   visibility: visible;
-  pointer-events: auto;
-  transform: translate(-50%, 0);
+  transform: translateY(0);
   transition-delay: 0s;
 }
 .nav-dropdown-item {
   display: block;
-  padding: 0.55rem 0.9rem;
-  border-radius: 0.6rem;
-  font-family: var(--font-serif);
-  font-size: 0.92rem;
-  color: rgb(var(--ink));
-  text-decoration: none;
-  transition: background-color 140ms ease, color 140ms ease;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.4rem;
+  font-size: 0.875rem;
+  color: rgb(var(--foreground));
+  transition: background-color 130ms ease, color 130ms ease;
 }
 .nav-dropdown-item:hover {
-  background-color: rgba(22, 171, 101, 0.08);
+  background-color: rgb(var(--muted));
   color: rgb(var(--primary));
 }
 </style>

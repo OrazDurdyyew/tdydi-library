@@ -19,16 +19,20 @@
 
 ### Запуск
 ```bash
+make dev          # одна команда: поднимает всё и показывает логи
+# или вручную:
 cp .env.example .env
 cd deploy
 docker compose -f docker-compose.dev.yml up -d
 ```
 
+Полезные команды: `make help`.
+
 После старта:
 - Frontend: http://localhost:2026
 - API:      http://localhost:2020
 - API health: http://localhost:2020/api/health
-- PostgreSQL: localhost:5432 (library / library)
+- PostgreSQL: localhost:5433 (library / library) — внутри docker-сети 5432
 
 ### Остановить
 ```bash

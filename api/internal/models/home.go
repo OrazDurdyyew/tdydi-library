@@ -38,6 +38,23 @@ type HomeCollection struct {
 	Collection *Collection `gorm:"foreignKey:CollectionID" json:"collection,omitempty"`
 }
 
+// HomePromo — промо-блок на главной: картинка + заголовок/подзаголовок (3 языка) + ссылка.
+type HomePromo struct {
+	ID         int64     `gorm:"primaryKey" json:"id"`
+	ImagePath  string    `gorm:"type:text;not null;default:''" json:"image_path"`
+	LinkURL    string    `gorm:"type:text;not null;default:''" json:"link_url"`
+	SortOrder  int       `gorm:"not null;default:0" json:"sort_order"`
+	IsActive   bool      `gorm:"not null;default:true" json:"is_active"`
+	TitleTM    string    `gorm:"size:255;not null;default:''" json:"title_tm"`
+	TitleRU    string    `gorm:"size:255;not null;default:''" json:"title_ru"`
+	TitleEN    string    `gorm:"size:255;not null;default:''" json:"title_en"`
+	SubtitleTM string    `gorm:"type:text;not null;default:''" json:"subtitle_tm"`
+	SubtitleRU string    `gorm:"type:text;not null;default:''" json:"subtitle_ru"`
+	SubtitleEN string    `gorm:"type:text;not null;default:''" json:"subtitle_en"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
 func (HomeSlide) TableName() string      { return "home_slides" }
 func (HomeSection) TableName() string    { return "home_sections" }
 func (HomeCollection) TableName() string { return "home_collections" }
+func (HomePromo) TableName() string      { return "home_promos" }

@@ -9,7 +9,7 @@ import "time"
 type Section struct {
 	ID        int64     `gorm:"primaryKey" json:"id"`
 	Slug      string    `gorm:"size:255;uniqueIndex;not null" json:"slug"`
-	ParentID  *int64    `gorm:"index" json:"parent_id,omitempty"`
+	ParentID  *int64    `gorm:"index" json:"parent_id"`
 	SortOrder int       `gorm:"not null;default:0" json:"sort_order"`
 	ImagePath string    `gorm:"type:text" json:"image_path,omitempty"`
 	NameTM    string    `gorm:"size:255;not null" json:"name_tm"`
@@ -23,6 +23,9 @@ type Section struct {
 
 	Parent   *Section  `gorm:"foreignKey:ParentID" json:"parent,omitempty"`
 	Children []Section `gorm:"foreignKey:ParentID" json:"children,omitempty"`
+
+	// BookCount — не хранится в БД, заполняется хендлерами для админки и карточек подразделов.
+	BookCount int64 `gorm:"-" json:"book_count"`
 }
 
 func (Section) TableName() string { return "sections" }

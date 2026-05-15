@@ -22,21 +22,55 @@ func NewHomeHandler(db *gorm.DB, files *services.FileStorage) *HomeHandler {
 	return &HomeHandler{db: db, files: files}
 }
 
+// HomeSectionBlock — блок раздела на главной: сам раздел + несколько его книг.
+type HomeSectionBlock struct {
+	Section models.Section `json:"section"`
+	Books   []models.Book  `json:"books"`
+}
+
 // GetHomeData — public endpoint: all home-page building blocks in one response.
+// Включает слайды, новинки, блоки разделов с книгами, подборки и последние новости.
 func (h *HomeHandler) GetHomeData(c *fiber.Ctx) error {
 	var slides []models.HomeSlide
 	h.db.Where("is_active = ?", true).Order("sort_order ASC").Find(&slides)
 
+	var newBooks []models.Book
+	h.db.Where("is_published = ?", true).Preload("Sections").
+		Order("created_at DESC").Limit(12).Find(&newBooks)
+
 	var homeSections []models.HomeSection
 	h.db.Preload("Section").Where("is_active = ?", true).Order("sort_order ASC").Find(&homeSections)
+
+	sectionBlocks := make([]HomeSectionBlock, 0, len(homeSections))
+	for _, hs := range homeSections {
+		if hs.Section == nil {
+			continue
+		}
+		var books []models.Book
+		h.db.Joins("JOIN book_sections bs ON bs.book_id = books.id").
+			Where("bs.section_id = ? AND books.is_published = ?", hs.SectionID, true).
+			Order("books.created_at DESC").Limit(6).Find(&books)
+		sectionBlocks = append(sectionBlocks, HomeSectionBlock{Section: *hs.Section, Books: books})
+	}
 
 	var homeCollections []models.HomeCollection
 	h.db.Preload("Collection").Where("is_active = ?", true).Order("sort_order ASC").Find(&homeCollections)
 
+	var latestPosts []models.Post
+	h.db.Select("id, slug, cover_path, author, published_at, status, title_tm, title_ru, title_en").
+		Where("status = ?", models.PostStatusPublished).
+		Order("published_at DESC, created_at DESC").Limit(4).Find(&latestPosts)
+
+	var promos []models.HomePromo
+	h.db.Where("is_active = ?", true).Order("sort_order ASC, id ASC").Find(&promos)
+
 	return c.JSON(fiber.Map{
-		"slides":      slides,
-		"sections":    homeSections,
-		"collections": homeCollections,
+		"slides":         slides,
+		"new_books":      newBooks,
+		"section_blocks": sectionBlocks,
+		"collections":    homeCollections,
+		"latest_posts":   latestPosts,
+		"promos":         promos,
 	})
 }
 
@@ -263,4 +297,115 @@ func (h *HomeHandler) RemoveHomeCollection(c *fiber.Ctx) error {
 	}
 	h.db.Delete(&models.HomeCollection{}, id)
 	return c.SendStatus(204)
+}
+
+// ---- Home promos admin ----
+
+type PromoDTO struct {
+	SortOrder  int    `json:"sort_order"`
+	IsActive   bool   `json:"is_active"`
+	LinkURL    string `json:"link_url"`
+	TitleTM    string `json:"title_tm"`
+	TitleRU    string `json:"title_ru"`
+	TitleEN    string `json:"title_en"`
+	SubtitleTM string `json:"subtitle_tm"`
+	SubtitleRU string `json:"subtitle_ru"`
+	SubtitleEN string `json:"subtitle_en"`
+}
+
+func (h *HomeHandler) ListPromos(c *fiber.Ctx) error {
+	var promos []models.HomePromo
+	h.db.Order("sort_order ASC, id ASC").Find(&promos)
+	return c.JSON(promos)
+}
+
+func (h *HomeHandler) CreatePromo(c *fiber.Ctx) error {
+	var dto PromoDTO
+	if err := c.BodyParser(&dto); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+	}
+	promo := models.HomePromo{
+		SortOrder:  dto.SortOrder,
+		IsActive:   dto.IsActive,
+		LinkURL:    dto.LinkURL,
+		TitleTM:    dto.TitleTM,
+		TitleRU:    dto.TitleRU,
+		TitleEN:    dto.TitleEN,
+		SubtitleTM: dto.SubtitleTM,
+		SubtitleRU: dto.SubtitleRU,
+		SubtitleEN: dto.SubtitleEN,
+	}
+	h.db.Create(&promo)
+	return c.Status(201).JSON(promo)
+}
+
+func (h *HomeHandler) UpdatePromo(c *fiber.Ctx) error {
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "invalid id"})
+	}
+	var promo models.HomePromo
+	if err := h.db.First(&promo, id).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "not found"})
+	}
+	var dto PromoDTO
+	if err := c.BodyParser(&dto); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+	}
+	promo.SortOrder = dto.SortOrder
+	promo.IsActive = dto.IsActive
+	promo.LinkURL = dto.LinkURL
+	promo.TitleTM = dto.TitleTM
+	promo.TitleRU = dto.TitleRU
+	promo.TitleEN = dto.TitleEN
+	promo.SubtitleTM = dto.SubtitleTM
+	promo.SubtitleRU = dto.SubtitleRU
+	promo.SubtitleEN = dto.SubtitleEN
+	h.db.Save(&promo)
+	return c.JSON(promo)
+}
+
+func (h *HomeHandler) DeletePromo(c *fiber.Ctx) error {
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "invalid id"})
+	}
+	h.db.Delete(&models.HomePromo{}, id)
+	return c.SendStatus(204)
+}
+
+func (h *HomeHandler) ReorderPromos(c *fiber.Ctx) error {
+	var dto ReorderSlidesDTO
+	if err := c.BodyParser(&dto); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+	}
+	for i, id := range dto.IDs {
+		h.db.Model(&models.HomePromo{}).Where("id = ?", id).Update("sort_order", i)
+	}
+	return c.SendStatus(204)
+}
+
+func (h *HomeHandler) UploadPromoImage(c *fiber.Ctx) error {
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "invalid id"})
+	}
+	var promo models.HomePromo
+	if err := h.db.First(&promo, id).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "not found"})
+	}
+	fh, err := c.FormFile("image")
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "image file required"})
+	}
+	if !isImageFile(fh) {
+		return c.Status(400).JSON(fiber.Map{"error": "only images allowed"})
+	}
+	ext := strings.ToLower(filepath.Ext(fh.Filename))
+	rel := fmt.Sprintf("promos/%d/image%s", id, ext)
+	if err := h.files.SaveUpload(fh, rel); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	h.db.Model(&promo).Update("image_path", rel)
+	return c.JSON(fiber.Map{"image_path": rel})
 }

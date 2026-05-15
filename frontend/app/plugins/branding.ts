@@ -1,44 +1,35 @@
-// Загружает настройки сайта и применяет CSS-токены (цвета палитры) + фавикон.
-// Работает универсально (SSR + клиент) — на SSR токены попадают в HTML <head>,
-// что предотвращает FOUC при первой загрузке.
+// Загружает настройки сайта и применяет CSS-токены (палитра), шрифт и фавикон.
+// ВАЖНО: useHead вызывается после await — контекст Nuxt теряется, поэтому
+// оборачиваем в nuxtApp.runWithContext(), иначе <style> не попадает в <head>.
 
-export default defineNuxtPlugin(async () => {
+export default defineNuxtPlugin(async (nuxtApp) => {
   const config = useRuntimeConfig()
   const settings = useSiteSettings()
 
   const apiBase = import.meta.server
-    ? (config.apiBase || config.public.apiBase)
+    ? config.apiBase || config.public.apiBase
     : config.public.apiBase
 
+  let data: any
   try {
-    const data = await $fetch<any>(`${apiBase}/site-settings`)
-    settings.value = data
-
-    const css = `:root {
-  --primary: ${data.primary_color};
-  --secondary: ${data.secondary_color};
-  --accent: ${data.accent_color};
-  --background: ${data.background_color};
-  --foreground: ${data.foreground_color};
-  --muted: ${data.muted_color};
-  --border: ${data.border_color};
-  --ring: ${data.ring_color};
-  --font-family: '${data.font_family}', system-ui, sans-serif;
-}`
-
-    const head: Record<string, any> = {
-      style: [{ children: css, id: 'site-branding' }]
-    }
-
-    if (data.favicon_path) {
-      head.link = [{
-        rel: 'icon',
-        href: `${config.public.apiBase}/files/${data.favicon_path}`
-      }]
-    }
-
-    useHead(head)
+    data = await $fetch<any>(`${apiBase}/site-settings`)
   } catch {
-    // Graceful fallback на дефолтные CSS-переменные из main.css
+    return // graceful fallback на дефолтные CSS-переменные из main.css
   }
+
+  settings.value = data
+
+  const link: Record<string, any>[] = [
+    { rel: 'stylesheet', href: fontHref(data), id: 'site-font' }
+  ]
+  if (data.favicon_path) {
+    link.push({ rel: 'icon', href: `${config.public.apiBase}/files/${data.favicon_path}` })
+  }
+
+  nuxtApp.runWithContext(() => {
+    useHead({
+      style: [{ innerHTML: brandingCss(data), id: 'site-branding', tagPriority: 'critical' } as any],
+      link
+    })
+  })
 })

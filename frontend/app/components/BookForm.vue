@@ -46,102 +46,111 @@ function sectionLabel(s: Section): string {
 
 <template>
   <form @submit.prevent="emit('submit')" class="space-y-6 max-w-3xl">
-    <div class="card space-y-5">
-      <h3 class="font-semibold">Основное</h3>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-2">Slug *</label>
-          <input v-model="form.slug" required class="input font-mono text-sm" />
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-lg">Основное</CardTitle>
+      </CardHeader>
+      <CardContent class="space-y-5">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <Label for="book-slug">Slug *</Label>
+            <Input id="book-slug" v-model="form.slug" required class="font-mono" />
+          </div>
+          <div class="space-y-2">
+            <Label for="book-language">Язык книги *</Label>
+            <Select id="book-language" v-model="form.language">
+              <option value="tm">Türkmençe</option>
+              <option value="ru">Русский</option>
+              <option value="en">English</option>
+            </Select>
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium mb-2">Язык книги *</label>
-          <select v-model="form.language" required class="input">
-            <option value="tm">Türkmençe</option>
-            <option value="ru">Русский</option>
-            <option value="en">English</option>
-          </select>
+
+        <div class="space-y-2">
+          <Label for="book-title">Название *</Label>
+          <Input id="book-title" v-model="form.title" required />
         </div>
-      </div>
 
-      <div>
-        <label class="block text-sm font-medium mb-2">Название *</label>
-        <input v-model="form.title" required class="input" />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-2">Автор(ы)</label>
-        <input v-model="form.authors" class="input" placeholder="Иванов И.И., Петров П.П." />
-      </div>
-
-      <div class="grid grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-2">Год</label>
-          <input v-model.number="form.year" type="number" class="input" />
+        <div class="space-y-2">
+          <Label for="book-authors">Автор(ы)</Label>
+          <Input id="book-authors" v-model="form.authors" placeholder="Иванов И.И., Петров П.П." />
         </div>
-        <div>
-          <label class="block text-sm font-medium mb-2">Страниц</label>
-          <input v-model.number="form.pages" type="number" class="input" />
+
+        <div class="grid grid-cols-3 gap-4">
+          <div class="space-y-2">
+            <Label for="book-year">Год</Label>
+            <Input id="book-year" v-model.number="form.year" type="number" />
+          </div>
+          <div class="space-y-2">
+            <Label for="book-pages">Страниц</Label>
+            <Input id="book-pages" v-model.number="form.pages" type="number" />
+          </div>
+          <div class="space-y-2">
+            <Label for="book-isbn">ISBN</Label>
+            <Input id="book-isbn" v-model="form.isbn" />
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium mb-2">ISBN</label>
-          <input v-model="form.isbn" class="input" />
+
+        <div class="space-y-2">
+          <Label for="book-publisher">Издательство</Label>
+          <Input id="book-publisher" v-model="form.publisher" />
         </div>
-      </div>
 
-      <div>
-        <label class="block text-sm font-medium mb-2">Издательство</label>
-        <input v-model="form.publisher" class="input" />
-      </div>
+        <div class="space-y-2">
+          <Label for="book-annotation">Аннотация</Label>
+          <Textarea id="book-annotation" v-model="form.annotation" rows="4" />
+        </div>
+      </CardContent>
+    </Card>
 
-      <div>
-        <label class="block text-sm font-medium mb-2">Аннотация</label>
-        <textarea
-          v-model="form.annotation"
-          rows="4"
-          class="input"
-        ></textarea>
-      </div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-lg">Разделы *</CardTitle>
+        <CardDescription>Книга появится во всех выбранных разделах</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div class="border border-border rounded-lg p-3 max-h-56 overflow-y-auto space-y-1.5">
+          <label
+            v-for="s in sections"
+            :key="s.id"
+            class="flex items-center gap-3 cursor-pointer hover:bg-muted px-2 py-1 rounded-md"
+          >
+            <Checkbox :value="s.id" v-model="form.section_ids" />
+            <span :class="s.parent_id === null ? 'font-medium text-sm' : 'text-sm pl-4 text-muted-foreground'">
+              {{ sectionLabel(s) }}
+            </span>
+          </label>
+        </div>
+      </CardContent>
+    </Card>
 
-    <div class="card">
-      <h3 class="font-semibold mb-4">Разделы *</h3>
-      <div class="border border-border rounded-lg p-3 max-h-56 overflow-y-auto space-y-1.5">
-        <label v-for="s in sections" :key="s.id" class="flex items-center gap-2.5 cursor-pointer hover:bg-muted px-2 py-1 rounded-md">
-          <input
-            type="checkbox"
-            :value="s.id"
-            v-model="form.section_ids"
-            class="accent-primary"
-          />
-          <span :class="s.parent_id === null ? 'font-medium' : 'text-sm pl-4'">
-            {{ sectionLabel(s) }}
-          </span>
+    <Card>
+      <CardContent class="space-y-3 pt-6">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <Checkbox v-model="form.allow_download" />
+          <span class="text-sm">Разрешить скачивание</span>
         </label>
-      </div>
-      <div class="text-xs text-muted-foreground mt-2">
-        Книга появится во всех выбранных разделах.
-      </div>
-    </div>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <Checkbox v-model="form.is_published" />
+          <span class="text-sm">Опубликована</span>
+        </label>
+      </CardContent>
+    </Card>
 
-    <div class="card space-y-3">
-      <label class="flex items-center gap-3 cursor-pointer">
-        <input v-model="form.allow_download" type="checkbox" class="accent-primary" />
-        <span class="text-sm">Разрешить скачивание</span>
-      </label>
-      <label class="flex items-center gap-3 cursor-pointer">
-        <input v-model="form.is_published" type="checkbox" class="accent-primary" />
-        <span class="text-sm">Опубликована</span>
-      </label>
+    <div
+      v-if="error"
+      class="text-sm text-destructive p-3 bg-destructive/10 border border-destructive/20 rounded-lg"
+    >
+      {{ error }}
     </div>
-
-    <div v-if="error" class="text-sm text-red-600 p-3 bg-red-50 rounded-lg">{{ error }}</div>
 
     <div class="flex gap-3">
-      <button type="submit" :disabled="loading" class="btn-primary">
+      <Button type="submit" :disabled="loading">
         {{ loading ? 'Сохранение…' : 'Сохранить' }}
-      </button>
-      <NuxtLink to="/admin/books" class="btn-outline">Отмена</NuxtLink>
+      </Button>
+      <NuxtLink to="/admin/books">
+        <Button type="button" variant="outline">Отмена</Button>
+      </NuxtLink>
     </div>
   </form>
 </template>

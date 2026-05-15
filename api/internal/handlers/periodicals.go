@@ -134,9 +134,8 @@ func (h *PeriodicalsHandler) ServeIssueFile(c *fiber.Ctx) error {
 	if issue.FilePath == "" {
 		return c.Status(404).JSON(fiber.Map{"error": "no file"})
 	}
-	c.Set("X-Accel-Redirect", "/protected/"+issue.FilePath)
-	c.Set("Content-Type", "application/pdf")
-	return c.SendStatus(200)
+	h.db.Model(&issue).UpdateColumn("views_count", gorm.Expr("views_count + 1"))
+	return c.SendFile(h.files.AbsPath(issue.FilePath), false)
 }
 
 func (h *PeriodicalsHandler) DownloadIssue(c *fiber.Ctx) error {
@@ -152,9 +151,8 @@ func (h *PeriodicalsHandler) DownloadIssue(c *fiber.Ctx) error {
 		return c.Status(404).JSON(fiber.Map{"error": "no file"})
 	}
 	h.db.Model(&issue).UpdateColumn("downloads_count", gorm.Expr("downloads_count + 1"))
-	c.Set("X-Accel-Redirect", "/protected/"+issue.FilePath)
 	c.Set("Content-Disposition", fmt.Sprintf(`attachment; filename="issue-%d.pdf"`, issue.ID))
-	return c.SendStatus(200)
+	return c.Download(h.files.AbsPath(issue.FilePath))
 }
 
 // ---- Admin ----

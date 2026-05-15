@@ -26,6 +26,15 @@ type SiteSettings struct {
 	MutedColor      string         `gorm:"size:32;not null" json:"muted_color"`
 	BorderColor     string         `gorm:"size:32;not null" json:"border_color"`
 	RingColor       string         `gorm:"size:32;not null" json:"ring_color"`
+	// Палитра тёмной темы (светлая — поля выше).
+	DarkPrimaryColor    string `gorm:"size:32;not null;default:'122 162 201'" json:"dark_primary_color"`
+	DarkSecondaryColor  string `gorm:"size:32;not null;default:'96 141 184'" json:"dark_secondary_color"`
+	DarkAccentColor     string `gorm:"size:32;not null;default:'200 169 107'" json:"dark_accent_color"`
+	DarkBackgroundColor string `gorm:"size:32;not null;default:'15 23 42'" json:"dark_background_color"`
+	DarkForegroundColor string `gorm:"size:32;not null;default:'249 250 251'" json:"dark_foreground_color"`
+	DarkMutedColor      string `gorm:"size:32;not null;default:'30 41 59'" json:"dark_muted_color"`
+	DarkBorderColor     string `gorm:"size:32;not null;default:'31 41 55'" json:"dark_border_color"`
+	DarkRingColor       string `gorm:"size:32;not null;default:'122 162 201'" json:"dark_ring_color"`
 	FontFamily      string         `gorm:"size:255;not null;default:'Inter'" json:"font_family"`
 	ContactAddress  string         `gorm:"type:text" json:"contact_address,omitempty"`
 	ContactPhone    string         `gorm:"size:64" json:"contact_phone,omitempty"`

@@ -6,7 +6,19 @@
     "title": "Digital Library",
     "subtitle": "Sections, books, periodicals",
     "new_books": "New arrivals",
-    "no_books_yet": "No books yet."
+    "no_books_yet": "No books yet.",
+    "sections": "Sections",
+    "collections": "Collections",
+    "latest_news": "Institute news",
+    "intro_eyebrow": "about the library",
+    "intro_title": "Knowledge, openly accessible",
+    "intro_text": "The institute's digital library brings together textbooks, monographs, periodicals and study materials in a single catalogue. Read online right in your browser, search by section and author, follow new arrivals — no registration, no limits.",
+    "explore_title": "What's inside",
+    "explore_text": "The platform's main sections",
+    "feat_books": "A catalogue of textbooks and monographs with an in-browser reader and search by section, author and year.",
+    "feat_periodicals": "The institute's newspapers and magazines with a yearly issue archive and in-browser viewing.",
+    "feat_collections": "Themed book collections curated for exam preparation and deeper study.",
+    "feat_news": "Institute news and events, library announcements and new-arrival highlights."
   },
   "common": {
     "save": "Save",
@@ -14,14 +26,140 @@
     "delete": "Delete",
     "edit": "Edit",
     "search": "Search",
-    "loading": "Loading...",
+    "loading": "Loading…",
     "back": "Back",
-    "see_all": "View all"
+    "see_all": "View all",
+    "all": "All",
+    "not_found": "Not found",
+    "reset": "Reset",
+    "more": "Read more",
+    "close": "Close",
+    "nothing_found": "Nothing found"
   },
   "nav": {
     "home": "Home",
     "books": "Books",
     "periodicals": "Periodicals",
-    "news": "News"
+    "news": "News",
+    "collections": "Collections",
+    "faq": "FAQ"
+  },
+  "catalog": {
+    "title": "Book catalogue",
+    "found": "Found: {count}",
+    "filters": "Filters",
+    "section": "Section",
+    "year": "Publication year",
+    "author": "Author",
+    "language": "Book language",
+    "sort": "Sort by",
+    "sort_newest": "Newest first",
+    "sort_oldest": "Oldest first",
+    "sort_title": "By title",
+    "sort_year": "By year",
+    "sort_popular": "By popularity",
+    "any": "Any",
+    "no_results": "No books match your query.",
+    "lang_tm": "Turkmen",
+    "lang_ru": "Russian",
+    "lang_en": "English",
+    "page": "Page {page} of {total}"
+  },
+  "section": {
+    "subsections": "Subsections",
+    "books": "Books in this section",
+    "no_books": "No books in this section yet.",
+    "no_subsections": "No subsections.",
+    "browse": "Open section"
+  },
+  "book": {
+    "annotation": "Annotation",
+    "details": "Edition details",
+    "authors": "Authors",
+    "year": "Year",
+    "publisher": "Publisher",
+    "isbn": "ISBN",
+    "pages": "Pages",
+    "language": "Language",
+    "in_sections": "Sections",
+    "read": "Read online",
+    "download": "Download",
+    "download_off": "Download unavailable",
+    "similar": "Similar books",
+    "views": "Views",
+    "downloads": "Downloads",
+    "no_file": "File not uploaded yet.",
+    "share": "Share",
+    "qr_hint": "Scan to open on your phone"
+  },
+  "reader": {
+    "loading": "Loading document…",
+    "page": "Page",
+    "of": "of",
+    "prev": "Previous",
+    "next": "Next",
+    "bookmark": "Bookmark restored",
+    "close": "Close reader",
+    "download": "Download"
+  },
+  "periodicals": {
+    "title": "Periodicals",
+    "all": "All",
+    "newspapers": "Newspapers",
+    "magazines": "Magazines",
+    "issues": "Issues",
+    "issue": "Issue",
+    "archive": "Archive",
+    "no_issues": "No issues yet.",
+    "periodicity": "Periodicity",
+    "no_periodicals": "No periodicals yet.",
+    "newspaper": "Newspaper",
+    "magazine": "Magazine",
+    "read": "Read issue",
+    "issue_date": "Issue date"
+  },
+  "news": {
+    "title": "News",
+    "by": "By",
+    "published": "Published",
+    "read_more": "Read more",
+    "no_news": "No news yet.",
+    "back_to_news": "Back to all news"
+  },
+  "collections": {
+    "title": "Curated collections",
+    "books_count": "Books: {count}",
+    "no_collections": "No collections yet.",
+    "in_collection": "Books in this collection",
+    "empty": "This collection is empty."
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "subtitle": "Answers to common questions about the library",
+    "empty": "No questions added yet.",
+    "search_placeholder": "Search questions…"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "What are you looking for?",
+    "results_for": "Results for \"{query}\"",
+    "books": "Books",
+    "periodicals": "Periodicals",
+    "news": "News",
+    "faq": "FAQ",
+    "pages": "Pages",
+    "nothing": "Nothing found for your query.",
+    "type_query": "Type a query to start searching."
+  },
+  "page": {
+    "not_found_title": "Page not found",
+    "not_found_text": "The page may have been moved or removed.",
+    "go_home": "Go home"
+  },
+  "footer": {
+    "navigation": "Navigation",
+    "contacts": "Contacts",
+    "follow": "Follow us",
+    "rights": "All rights reserved"
   }
 }

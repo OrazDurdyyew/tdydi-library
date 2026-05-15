@@ -14,6 +14,14 @@ export interface SiteSettings {
   muted_color: string
   border_color: string
   ring_color: string
+  dark_primary_color: string
+  dark_secondary_color: string
+  dark_accent_color: string
+  dark_background_color: string
+  dark_foreground_color: string
+  dark_muted_color: string
+  dark_border_color: string
+  dark_ring_color: string
   font_family: string
   contact_address?: string
   contact_phone?: string

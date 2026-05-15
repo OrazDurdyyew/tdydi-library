@@ -17,7 +17,7 @@ func Register(app *fiber.App, db *gorm.DB, tm *auth.TokenManager, files *service
 	authH := handlers.NewAuthHandler(db, tm)
 	menuH := handlers.NewMenuHandler(db)
 	sectionsH := handlers.NewSectionsHandler(db)
-	settingsH := handlers.NewSiteSettingsHandler(db)
+	settingsH := handlers.NewSiteSettingsHandler(db, files)
 	booksH := handlers.NewBooksHandler(db, perms, files)
 	filesH := handlers.NewFilesHandler(storagePath)
 	periodicalsH := handlers.NewPeriodicalsHandler(db, files)
@@ -28,10 +28,13 @@ func Register(app *fiber.App, db *gorm.DB, tm *auth.TokenManager, files *service
 	homeH := handlers.NewHomeHandler(db, files)
 	adminsH := handlers.NewAdminsHandler(db)
 	statsH := handlers.NewStatsHandler(db, perms)
+	searchH := handlers.NewSearchHandler(db)
 
 	app.Get("/api/health", healthH.Get)
 
-	api := app.Group("/api")
+	// OptionalAuth — на всей группе /api: публичные GET'ы видят залогиненного
+	// админа (черновики постов/книг доступны при редактировании в админке).
+	api := app.Group("/api", middleware.OptionalAuth(tm))
 
 	// ── Auth ──────────────────────────────────────────────────────────────
 	api.Post("/auth/login", authH.Login)
@@ -54,6 +57,7 @@ func Register(app *fiber.App, db *gorm.DB, tm *auth.TokenManager, files *service
 	api.Get("/books", booksH.List)
 	api.Get("/books/slug/:slug", booksH.GetBySlug)
 	api.Get("/books/:id", booksH.Get)
+	api.Get("/books/:id/similar", booksH.Similar)
 	api.Get("/books/:id/file", booksH.ServeFile)
 	api.Get("/books/:id/download", booksH.Download)
 
@@ -84,6 +88,9 @@ func Register(app *fiber.App, db *gorm.DB, tm *auth.TokenManager, files *service
 	// ── FAQ ───────────────────────────────────────────────────────────────
 	api.Get("/faq", faqH.ListCategories)
 
+	// ── Search ────────────────────────────────────────────────────────────
+	api.Get("/search", searchH.Get)
+
 	// ── Static file serving (covers, logos, etc.) ─────────────────────────
 	api.Get("/files/*", filesH.ServePublic)
 
@@ -109,9 +116,11 @@ func Register(app *fiber.App, db *gorm.DB, tm *auth.TokenManager, files *service
 
 	// ── Site settings ─────────────────────────────────────────────────────
 	admin.Put("/site-settings", super, settingsH.Update)
+	admin.Post("/site-settings/asset", super, settingsH.UploadAsset)
 
 	// ── Sections ──────────────────────────────────────────────────────────
 	admin.Post("/sections", super, sectionsH.Create)
+	admin.Put("/sections/reorder", super, sectionsH.Reorder) // before /:id
 	admin.Put("/sections/:id", super, sectionsH.Update)
 	admin.Delete("/sections/:id", super, sectionsH.Delete)
 
@@ -180,6 +189,12 @@ func Register(app *fiber.App, db *gorm.DB, tm *auth.TokenManager, files *service
 	admin.Post("/home/collections", super, homeH.AddHomeCollection)
 	admin.Put("/home/collections/:id", super, homeH.UpdateHomeCollection)
 	admin.Delete("/home/collections/:id", super, homeH.RemoveHomeCollection)
+	admin.Get("/home/promos", super, homeH.ListPromos)
+	admin.Post("/home/promos", super, homeH.CreatePromo)
+	admin.Put("/home/promos/order", super, homeH.ReorderPromos) // before /:id
+	admin.Put("/home/promos/:id", super, homeH.UpdatePromo)
+	admin.Delete("/home/promos/:id", super, homeH.DeletePromo)
+	admin.Post("/home/promos/:id/image", super, homeH.UploadPromoImage)
 
 	// ── Stats export ──────────────────────────────────────────────────────
 	admin.Get("/stats/export.csv", super, statsH.ExportCSV)

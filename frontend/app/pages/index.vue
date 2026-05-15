@@ -1,24 +1,63 @@
 <script setup lang="ts">
-import { Search, ArrowRight } from 'lucide-vue-next'
+import {
+  Search,
+  ArrowRight,
+  BookMarked,
+  Newspaper,
+  Library,
+  Megaphone
+} from 'lucide-vue-next'
 
 const api = useApi()
 const { t } = useI18n()
+const loc = useLocalized()
+const fileUrl = useFileUrl()
 const localePath = useLocalePath()
 
-const { data: booksResp } = await useAsyncData('home-new-books', () =>
-  api.get<{ data: any[] }>('/books?sort=-created_at&limit=12').catch(() => ({ data: [] }))
+interface HomeData {
+  slides: any[]
+  new_books: any[]
+  section_blocks: { section: any; books: any[] }[]
+  collections: { collection: any }[]
+  latest_posts: any[]
+  promos: any[]
+}
+
+const { data: home } = await useAsyncData('home-data', () =>
+  api
+    .get<HomeData>('/home')
+    .catch(() => ({
+      slides: [],
+      new_books: [],
+      section_blocks: [],
+      collections: [],
+      latest_posts: [],
+      promos: []
+    }))
 )
 
-const newBooks = computed(() => booksResp.value?.data ?? [])
+const slides = computed(() => home.value?.slides ?? [])
+const hasSlides = computed(() => slides.value.some((s) => s.image_path))
+const newBooks = computed(() => home.value?.new_books ?? [])
+const sectionBlocks = computed(() => home.value?.section_blocks ?? [])
+const collections = computed(() =>
+  (home.value?.collections ?? []).map((hc) => hc.collection).filter(Boolean)
+)
+const latestPosts = computed(() => home.value?.latest_posts ?? [])
+const promos = computed(() => home.value?.promos ?? [])
 
 const query = ref('')
 function submitSearch() {
   if (!query.value.trim()) return
-  navigateTo({
-    path: localePath('/books'),
-    query: { q: query.value.trim() }
-  })
+  navigateTo({ path: localePath('/search'), query: { q: query.value.trim() } })
 }
+
+const categories = [
+  { to: '/books', icon: BookMarked, label: 'nav.books', desc: 'home.feat_books' },
+  { to: '/periodicals', icon: Newspaper, label: 'nav.periodicals', desc: 'home.feat_periodicals' },
+  { to: '/collections', icon: Library, label: 'nav.collections', desc: 'home.feat_collections' },
+  { to: '/news', icon: Megaphone, label: 'nav.news', desc: 'home.feat_news' }
+]
 
 useSeoMeta({
   title: () => t('home.title'),
@@ -28,222 +67,200 @@ useSeoMeta({
 
 <template>
   <div>
-    <!-- ===== Hero ===== -->
-    <section class="pt-24 md:pt-32 pb-12 md:pb-16">
-      <div class="page-container">
-        <div class="max-w-3xl mx-auto text-center">
-          <h1 class="font-serif font-bold tracking-tight text-5xl md:text-7xl leading-[1.02] mb-7">
-            {{ $t('home.title') }}
+    <!-- ===== Hero с фоновой каруселью ===== -->
+    <section
+      class="relative isolate border-b border-border"
+      :class="hasSlides ? 'text-white' : 'bg-card'"
+    >
+      <HeroCarousel v-if="hasSlides" :slides="slides" />
+
+      <div class="page-container py-16 md:py-28">
+        <div class="max-w-2xl">
+          <span class="eyebrow" :class="hasSlides ? '!text-white/70' : ''">
+            {{ t('home.intro_eyebrow') }}
+          </span>
+          <h1
+            class="text-3xl md:text-5xl font-bold tracking-tight mt-2 mb-4"
+            :class="hasSlides ? 'text-white' : ''"
+          >
+            {{ t('home.intro_title') }}
           </h1>
-          <p class="text-base md:text-lg text-foreground/75 leading-relaxed max-w-xl mx-auto mb-10">
-            {{ $t('home.subtitle') }}
+          <p
+            class="text-base md:text-lg leading-relaxed mb-7"
+            :class="hasSlides ? 'text-white/85' : 'text-muted-foreground'"
+          >
+            {{ t('home.intro_text') }}
           </p>
 
-          <!-- Pill-CTA -->
-          <div class="flex flex-wrap justify-center gap-3 mb-10">
-            <NuxtLinkLocale to="/books" class="cta-pill cta-pill-solid">
-              {{ $t('nav.books') }}
-            </NuxtLinkLocale>
-            <NuxtLinkLocale to="/periodicals" class="cta-pill">
-              {{ $t('nav.periodicals') }}
-            </NuxtLinkLocale>
-          </div>
-
-          <!-- Поиск -->
           <form
+            class="flex items-center h-12 px-4 rounded-xl border border-border bg-card focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/15 transition-colors max-w-xl"
             @submit.prevent="submitSearch"
-            class="search-bar relative max-w-xl mx-auto h-14 flex items-center pl-5 pr-2"
           >
-            <Search class="w-5 h-5 text-muted-foreground shrink-0 mr-3" />
+            <Search class="w-5 h-5 text-muted-foreground shrink-0" />
             <input
               v-model="query"
               type="search"
-              :placeholder="$t('common.search') + '…'"
-              class="flex-1 h-full bg-transparent border-0 outline-none font-serif italic text-base placeholder:text-muted-foreground/70"
+              :placeholder="t('search.placeholder')"
+              class="flex-1 h-full bg-transparent border-0 outline-none px-3 text-sm md:text-base text-foreground placeholder:text-muted-foreground"
             />
             <button
               type="submit"
-              class="h-10 px-5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition"
+              class="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-secondary transition-colors"
             >
-              {{ $t('common.search') }}
+              {{ t('common.search') }}
             </button>
           </form>
         </div>
       </div>
     </section>
 
-    <!-- ===== Большой презентационный блок (как карточка-постер) ===== -->
-    <section class="pb-20">
-      <div class="page-container">
-        <article class="hero-poster">
-          <div class="hero-poster-art" aria-hidden="true">
-            <div class="hero-poster-art-inner">
-              <div class="poster-shape shape-1" />
-              <div class="poster-shape shape-2" />
-              <div class="poster-shape shape-3" />
-            </div>
-          </div>
-          <div class="hero-poster-body">
-            <span class="eyebrow">{{ $t('home.new_books') }}</span>
-            <h2 class="font-serif font-bold text-3xl md:text-5xl leading-tight mt-3 mb-4">
-              {{ $t('home.new_books') }}
-            </h2>
-            <p class="text-foreground/75 leading-relaxed mb-7 max-w-md">
-              {{ $t('home.subtitle') }}
-            </p>
-            <NuxtLinkLocale to="/books" class="cta-pill cta-pill-solid inline-flex items-center gap-2">
-              {{ $t('common.see_all') }}
-              <ArrowRight class="w-4 h-4" />
-            </NuxtLinkLocale>
-          </div>
-        </article>
-      </div>
-    </section>
+    <div class="page-container py-12 md:py-16 space-y-16">
+      <!-- ===== Категории ===== -->
+      <section>
+        <div class="mb-6">
+          <h2 class="text-xl md:text-2xl font-bold tracking-tight">{{ t('home.explore_title') }}</h2>
+          <p class="text-sm text-muted-foreground mt-1">{{ t('home.explore_text') }}</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <NuxtLinkLocale
+            v-for="cat in categories"
+            :key="cat.to"
+            :to="cat.to"
+            class="group card card-hover p-5 flex flex-col"
+          >
+            <component :is="cat.icon" class="w-6 h-6 text-secondary mb-3" />
+            <h3 class="font-semibold text-base">{{ t(cat.label) }}</h3>
+            <p class="text-sm text-muted-foreground mt-1 flex-1">{{ t(cat.desc) }}</p>
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-secondary mt-3">
+              {{ t('common.see_all') }}
+              <ArrowRight class="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </NuxtLinkLocale>
+        </div>
+      </section>
 
-    <!-- ===== Полка с новинками ===== -->
-    <section class="pb-24">
-      <div class="page-container">
-        <div class="flex items-end justify-between mb-10">
-          <div>
-            <span class="eyebrow">caput · index</span>
-            <h2 class="font-serif font-bold text-3xl md:text-4xl mt-2">
-              {{ $t('home.new_books') }}
-            </h2>
-          </div>
+      <!-- ===== Промо-блоки ===== -->
+      <section v-if="promos.length">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <component
+            :is="promo.link_url ? 'a' : 'div'"
+            v-for="promo in promos"
+            :key="promo.id"
+            :href="promo.link_url || undefined"
+            class="group relative block rounded-xl overflow-hidden border border-border min-h-[200px] bg-muted"
+          >
+            <img
+              v-if="promo.image_path"
+              :src="fileUrl(promo.image_path)"
+              :alt="loc(promo, 'title')"
+              class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div
+              class="relative z-10 flex flex-col justify-end min-h-[200px] p-6"
+              style="background: linear-gradient(to top, rgba(15,23,42,0.78), transparent 65%)"
+            >
+              <h3 class="text-lg md:text-xl font-bold text-white">{{ loc(promo, 'title') }}</h3>
+              <p v-if="loc(promo, 'subtitle')" class="text-white/85 text-sm mt-1.5">
+                {{ loc(promo, 'subtitle') }}
+              </p>
+            </div>
+          </component>
+        </div>
+      </section>
+
+      <!-- ===== Новинки (карусель) ===== -->
+      <section>
+        <div class="flex items-end justify-between mb-5">
+          <h2 class="text-xl md:text-2xl font-bold tracking-tight">{{ t('home.new_books') }}</h2>
           <NuxtLinkLocale
             to="/books"
-            class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+            class="inline-flex items-center gap-1 text-sm font-medium text-secondary hover:underline"
           >
-            {{ $t('common.see_all') }}
+            {{ t('common.see_all') }}
+            <ArrowRight class="w-4 h-4" />
+          </NuxtLinkLocale>
+        </div>
+        <BookCarousel v-if="newBooks.length" :books="newBooks" />
+        <div v-else class="card p-12 text-center text-muted-foreground">
+          {{ t('home.no_books_yet') }}
+        </div>
+      </section>
+
+      <!-- ===== Блоки разделов: баннер + карусель ===== -->
+      <section v-for="block in sectionBlocks" :key="block.section.id">
+        <NuxtLinkLocale
+          v-if="block.section.image_path"
+          :to="`/sections/${block.section.slug}`"
+          class="group relative block rounded-xl overflow-hidden border border-border mb-5 min-h-[160px] md:min-h-[200px] bg-muted"
+        >
+          <img
+            :src="fileUrl(block.section.image_path)"
+            :alt="loc(block.section, 'name')"
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div
+            class="relative z-10 flex flex-col justify-end min-h-[160px] md:min-h-[200px] p-6"
+            style="background: linear-gradient(to top, rgba(15,23,42,0.7), transparent 60%)"
+          >
+            <h2 class="text-xl md:text-2xl font-bold text-white">
+              {{ loc(block.section, 'name') }}
+            </h2>
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-white/90 mt-1">
+              {{ t('common.see_all') }}
+              <ArrowRight class="w-4 h-4" />
+            </span>
+          </div>
+        </NuxtLinkLocale>
+        <div v-else class="flex items-end justify-between mb-5">
+          <h2 class="text-xl md:text-2xl font-bold tracking-tight">
+            {{ loc(block.section, 'name') }}
+          </h2>
+          <NuxtLinkLocale
+            :to="`/sections/${block.section.slug}`"
+            class="inline-flex items-center gap-1 text-sm font-medium text-secondary hover:underline"
+          >
+            {{ t('common.see_all') }}
             <ArrowRight class="w-4 h-4" />
           </NuxtLinkLocale>
         </div>
 
-        <div v-if="newBooks.length === 0" class="paper-card text-center py-20 text-muted-foreground serif italic">
-          {{ $t('home.no_books_yet') }}
-        </div>
+        <BookCarousel v-if="block.books.length" :books="block.books" />
+        <p v-else class="text-sm text-muted-foreground">{{ t('section.no_books') }}</p>
+      </section>
 
-        <div
-          v-else
-          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-12"
-        >
-          <BookCard
-            v-for="book in newBooks"
-            :key="book.id"
-            :book="book"
-          />
+      <!-- ===== Подборки ===== -->
+      <section v-if="collections.length">
+        <div class="flex items-end justify-between mb-6">
+          <h2 class="text-xl md:text-2xl font-bold tracking-tight">{{ t('home.collections') }}</h2>
+          <NuxtLinkLocale
+            to="/collections"
+            class="inline-flex items-center gap-1 text-sm font-medium text-secondary hover:underline"
+          >
+            {{ t('common.see_all') }}
+            <ArrowRight class="w-4 h-4" />
+          </NuxtLinkLocale>
         </div>
-      </div>
-    </section>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <CollectionCard v-for="col in collections" :key="col.id" :collection="col" />
+        </div>
+      </section>
+
+      <!-- ===== Новости ===== -->
+      <section v-if="latestPosts.length">
+        <div class="flex items-end justify-between mb-6">
+          <h2 class="text-xl md:text-2xl font-bold tracking-tight">{{ t('home.latest_news') }}</h2>
+          <NuxtLinkLocale
+            to="/news"
+            class="inline-flex items-center gap-1 text-sm font-medium text-secondary hover:underline"
+          >
+            {{ t('common.see_all') }}
+            <ArrowRight class="w-4 h-4" />
+          </NuxtLinkLocale>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <PostCard v-for="post in latestPosts" :key="post.id" :post="post" />
+        </div>
+      </section>
+    </div>
   </div>
 </template>
-
-<style scoped>
-/* === Pill-кнопки === */
-.cta-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 48px;
-  padding: 0 1.5rem;
-  border-radius: 999px;
-  background-color: rgb(var(--card));
-  border: 1px solid rgb(var(--border));
-  font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 0.95rem;
-  color: rgb(var(--ink));
-  text-decoration: none;
-  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
-}
-.cta-pill:hover {
-  background-color: rgba(22, 171, 101, 0.08);
-  color: rgb(var(--primary));
-  border-color: rgba(22, 171, 101, 0.45);
-}
-.cta-pill-solid {
-  background-color: rgb(var(--primary));
-  color: rgb(var(--primary-foreground));
-  border-color: transparent;
-  box-shadow: 0 6px 18px rgba(22, 171, 101, 0.28);
-}
-.cta-pill-solid:hover {
-  background-color: rgb(var(--primary));
-  color: rgb(var(--primary-foreground));
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(22, 171, 101, 0.35);
-}
-
-/* === Search bar === */
-.search-bar {
-  border-radius: 999px;
-  background-color: rgb(var(--card));
-  border: 1px solid rgb(var(--border));
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5), 0 8px 18px rgba(0, 0, 0, 0.05);
-  transition: border-color 160ms ease, box-shadow 160ms ease;
-}
-.search-bar:focus-within {
-  border-color: rgba(22, 171, 101, 0.5);
-  box-shadow: 0 0 0 4px rgba(22, 171, 101, 0.12), 0 8px 18px rgba(0, 0, 0, 0.06);
-}
-
-/* === Hero poster (большая презентационная карточка) === */
-.hero-poster {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0;
-  background-color: rgb(var(--card));
-  border-radius: 28px;
-  overflow: hidden;
-  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.08), inset 0 0 1px rgba(0, 0, 0, 0.04);
-}
-@media (min-width: 768px) {
-  .hero-poster {
-    grid-template-columns: 1.1fr 1fr;
-  }
-}
-.hero-poster-art {
-  position: relative;
-  min-height: 320px;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(22, 171, 101, 0.15), transparent 60%),
-    linear-gradient(135deg, rgb(var(--muted)) 0%, rgb(var(--card)) 100%);
-}
-.hero-poster-art-inner {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-}
-.poster-shape {
-  position: absolute;
-  border-radius: 12px;
-  background-color: rgb(var(--card));
-  box-shadow: 4px 6px 18px rgba(0, 0, 0, 0.12), inset 0 0 1px rgba(0, 0, 0, 0.06);
-}
-.shape-1 {
-  width: 140px;
-  height: 200px;
-  transform: translate(-40px, -10px) rotate(-8deg);
-  background: linear-gradient(180deg, rgb(var(--primary)) 0%, rgb(var(--primary)) 35%, rgb(var(--card)) 35%);
-}
-.shape-2 {
-  width: 140px;
-  height: 200px;
-  transform: translate(40px, 20px) rotate(6deg);
-  background: linear-gradient(180deg, rgb(var(--secondary)) 0%, rgb(var(--secondary)) 35%, rgb(var(--card)) 35%);
-}
-.shape-3 {
-  width: 140px;
-  height: 200px;
-  transform: translate(110px, -20px) rotate(12deg);
-  background: linear-gradient(180deg, rgb(var(--ink)) 0%, rgb(var(--ink)) 35%, rgb(var(--card)) 35%);
-}
-.hero-poster-body {
-  padding: 2rem 2rem 2.25rem;
-}
-@media (min-width: 768px) {
-  .hero-poster-body { padding: 3rem 3rem 3.25rem; }
-}
-</style>

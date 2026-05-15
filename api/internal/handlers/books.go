@@ -50,9 +50,24 @@ func (h *BooksHandler) List(c *fiber.Ctx) error {
 
 	q := h.db.Model(&models.Book{})
 
-	isAdmin := c.Locals("admin_id") != nil
-	if !isAdmin {
+	if c.Locals("admin_id") == nil {
 		q = q.Where("is_published = ?", true)
+	} else {
+		// Контент-менеджер в админке видит только книги из назначенных ему разделов.
+		// Для суперадмина/all_sections AllowedSectionIDs возвращает nil — ограничений нет.
+		adminID, _ := c.Locals("admin_id").(int64)
+		allowed, err := h.perms.AllowedSectionIDs(adminID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		}
+		if allowed != nil {
+			if len(allowed) == 0 {
+				q = q.Where("1 = 0")
+			} else {
+				q = q.Where("books.id IN (?)",
+					h.db.Model(&models.BookSection{}).Select("book_id").Where("section_id IN ?", allowed))
+			}
+		}
 	}
 
 	if sectionIDStr := c.Query("section_id"); sectionIDStr != "" {
@@ -134,6 +149,28 @@ func (h *BooksHandler) GetBySlug(c *fiber.Ctx) error {
 		return c.Status(404).JSON(fiber.Map{"error": "not found"})
 	}
 	return c.JSON(book)
+}
+
+// Similar — GET /api/books/:id/similar. Книги, делящие хотя бы один раздел с указанной,
+// отсортированные по популярности. Только опубликованные, без самой книги.
+func (h *BooksHandler) Similar(c *fiber.Ctx) error {
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "invalid id"})
+	}
+	var sectionIDs []int64
+	h.db.Model(&models.BookSection{}).Where("book_id = ?", id).Pluck("section_id", &sectionIDs)
+
+	books := []models.Book{}
+	if len(sectionIDs) > 0 {
+		h.db.Distinct("books.*").
+			Joins("JOIN book_sections bs ON bs.book_id = books.id").
+			Where("bs.section_id IN ? AND books.id <> ? AND books.is_published = ?", sectionIDs, id, true).
+			Preload("Sections").
+			Order("books.views_count DESC, books.created_at DESC").
+			Limit(6).Find(&books)
+	}
+	return c.JSON(fiber.Map{"data": books})
 }
 
 func (h *BooksHandler) Create(c *fiber.Ctx) error {

@@ -6,15 +6,15 @@ const locales = ['tm', 'ru', 'en'] as const
 </script>
 
 <template>
-  <div class="inline-flex items-center gap-1 font-serif text-xs">
+  <div class="inline-flex items-center text-xs font-medium">
     <template v-for="(code, idx) in locales" :key="code">
-      <span v-if="idx > 0" class="text-border/80 select-none">/</span>
+      <span v-if="idx > 0" class="text-border select-none">/</span>
       <NuxtLink
         :to="switchLocalePath(code)"
         :class="locale === code
-          ? 'text-primary font-bold'
-          : 'text-muted-foreground hover:text-primary'"
-        class="uppercase tracking-wider px-1 transition-colors"
+          ? 'text-primary font-semibold'
+          : 'text-muted-foreground hover:text-foreground'"
+        class="uppercase tracking-wide px-1.5 py-1 transition-colors"
       >
         {{ code }}
       </NuxtLink>

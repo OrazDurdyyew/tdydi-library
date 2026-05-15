@@ -19,7 +19,7 @@ services:
       - postgres-data-dev:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U library"]
       interval: 5s
@@ -43,9 +43,12 @@ services:
       API_PORT: 2020
       ALLOWED_ORIGINS: http://localhost:2026
       CGO_ENABLED: "0"
+      GOPROXY: https://goproxy.io,https://goproxy.cn,https://proxy.golang.org,direct
+      GOSUMDB: "off"
     command: >
-      sh -c "apk add --no-cache git poppler-utils &&
-             go install github.com/air-verse/air@latest &&
+      sh -c "until apk add --no-cache git poppler-utils; do echo 'retry apk'; sleep 3; done &&
+             until go install github.com/air-verse/air@v1.61.7; do echo 'retry air install'; sleep 3; done &&
+             until go mod download; do echo 'retry mod download'; sleep 3; done &&
              air"
     ports:
       - "2020:2020"
@@ -63,7 +66,11 @@ services:
       API_BASE_INTERNAL: http://api:2020/api
       HOST: 0.0.0.0
       PORT: "2026"
-    command: sh -c "npm install && npm run dev"
+    command: >
+      sh -c "corepack enable &&
+             corepack prepare pnpm@10.26.0 --activate &&
+             pnpm install --frozen-lockfile &&
+             pnpm dev"
     ports:
       - "2026:2026"
 

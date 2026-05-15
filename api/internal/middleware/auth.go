@@ -28,6 +28,25 @@ func RequireAuth(tm *auth.TokenManager) fiber.Handler {
 	}
 }
 
+// OptionalAuth разбирает JWT, если он есть, и кладёт claims в Locals.
+// В отличие от RequireAuth — не отклоняет запрос без токена.
+// Нужен на публичных GET-маршрутах: позволяет залогиненному админу
+// видеть черновики (постов, книг) через те же эндпоинты, что и гости.
+func OptionalAuth(tm *auth.TokenManager) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		header := c.Get("Authorization")
+		if strings.HasPrefix(header, "Bearer ") {
+			tokenStr := strings.TrimPrefix(header, "Bearer ")
+			if claims, err := tm.Verify(tokenStr); err == nil {
+				c.Locals("admin_id", claims.AdminID)
+				c.Locals("admin_role", claims.Role)
+				c.Locals("admin_username", claims.Username)
+			}
+		}
+		return c.Next()
+	}
+}
+
 // RequireSuperadmin блокирует доступ всем, кроме роли superadmin.
 // Применяется после RequireAuth.
 func RequireSuperadmin() fiber.Handler {

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Plus } from 'lucide-vue-next'
+
 definePageMeta({ layout: 'admin' })
 
 interface Book {
@@ -13,19 +15,28 @@ interface Book {
 }
 
 const api = useApi()
+const toast = useToast()
+const { ask } = useConfirm()
 const { data, refresh, pending } = await useAsyncData('admin-books', () =>
   api.get<{ data: Book[]; meta: { total: number } }>('/books?limit=100')
 )
 
 const books = computed(() => data.value?.data ?? [])
 
-async function remove(id: number) {
-  if (!confirm('Удалить книгу?')) return
+async function remove(id: number, title: string) {
+  const ok = await ask({
+    title: 'Удалить книгу?',
+    description: `«${title}» будет удалена безвозвратно.`,
+    confirmText: 'Удалить',
+    variant: 'destructive'
+  })
+  if (!ok) return
   try {
     await api.delete(`/admin/books/${id}`)
     await refresh()
+    toast.success('Книга удалена')
   } catch (e: any) {
-    alert(e.data?.error || 'Ошибка')
+    toast.error(e.data?.error || 'Ошибка')
   }
 }
 
@@ -35,49 +46,55 @@ useHead({ title: 'Книги' })
 <template>
   <div>
     <div class="flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-bold">Книги</h1>
-      <NuxtLink to="/admin/books/new" class="btn-primary">+ Добавить книгу</NuxtLink>
+      <h1 class="text-3xl font-bold font-serif">Книги</h1>
+      <NuxtLink to="/admin/books/new">
+        <Button><Plus class="w-4 h-4" /> Добавить книгу</Button>
+      </NuxtLink>
     </div>
 
-    <div v-if="pending">Загрузка…</div>
+    <div v-if="pending" class="text-muted-foreground">Загрузка…</div>
 
-    <div v-else class="card !p-0 overflow-hidden">
-      <table class="w-full">
-        <thead>
-          <tr class="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            <th class="px-6 py-4">ID</th>
-            <th class="px-6 py-4">Название</th>
-            <th class="px-6 py-4">Автор</th>
-            <th class="px-6 py-4">Год</th>
-            <th class="px-6 py-4">Язык</th>
-            <th class="px-6 py-4">Статус</th>
-            <th class="px-6 py-4"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="b in books" :key="b.id" class="border-t border-border hover:bg-muted/40 transition-colors">
-            <td class="px-6 py-4 text-sm">{{ b.id }}</td>
-            <td class="px-6 py-4 font-medium">{{ b.title }}</td>
-            <td class="px-6 py-4 text-sm text-muted-foreground">{{ b.authors }}</td>
-            <td class="px-6 py-4 text-sm">{{ b.year || '—' }}</td>
-            <td class="px-6 py-4 text-sm uppercase">{{ b.language }}</td>
-            <td class="px-6 py-4">
-              <span :class="b.is_published ? 'badge-success' : 'badge-warning'">
+    <Card v-else class="p-0 overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Название</TableHead>
+            <TableHead>Автор</TableHead>
+            <TableHead>Год</TableHead>
+            <TableHead>Язык</TableHead>
+            <TableHead>Статус</TableHead>
+            <TableHead class="text-right">Действия</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow v-for="b in books" :key="b.id">
+            <TableCell class="text-muted-foreground">{{ b.id }}</TableCell>
+            <TableCell class="font-medium">{{ b.title }}</TableCell>
+            <TableCell class="text-muted-foreground">{{ b.authors || '—' }}</TableCell>
+            <TableCell>{{ b.year || '—' }}</TableCell>
+            <TableCell class="uppercase text-xs">{{ b.language }}</TableCell>
+            <TableCell>
+              <Badge :variant="b.is_published ? 'success' : 'warning'">
                 {{ b.is_published ? 'Опубликована' : 'Черновик' }}
-              </span>
-            </td>
-            <td class="px-6 py-4 text-right space-x-4">
-              <NuxtLink :to="`/admin/books/${b.id}`" class="text-primary hover:underline text-sm">Изменить</NuxtLink>
-              <button @click="remove(b.id)" class="text-red-600 hover:underline text-sm">Удалить</button>
-            </td>
-          </tr>
-          <tr v-if="books.length === 0">
-            <td colspan="7" class="px-6 py-16 text-center text-muted-foreground">
-              Книг пока нет. Добавьте первую.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+              </Badge>
+            </TableCell>
+            <TableCell class="text-right">
+              <div class="flex justify-end gap-2">
+                <NuxtLink :to="`/admin/books/${b.id}`">
+                  <Button variant="ghost" size="sm">Изменить</Button>
+                </NuxtLink>
+                <Button variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="remove(b.id, b.title)">
+                  Удалить
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+          <TableEmpty v-if="books.length === 0" :colspan="7">
+            Книг пока нет. Добавьте первую.
+          </TableEmpty>
+        </TableBody>
+      </Table>
+    </Card>
   </div>
 </template>

@@ -49,7 +49,11 @@ useHead({ title: 'Добавить книгу' })
 
 <template>
   <div>
-    <h1 class="text-2xl font-bold mb-6">Добавить книгу</h1>
+    <div class="flex items-center gap-3 mb-6">
+      <NuxtLink to="/admin/books" class="text-muted-foreground hover:text-foreground text-sm">← Книги</NuxtLink>
+      <span class="text-muted-foreground">/</span>
+      <h1 class="text-2xl font-bold font-serif">Добавить книгу</h1>
+    </div>
     <BookForm
       v-model="form"
       :sections="sections"
@@ -57,8 +61,8 @@ useHead({ title: 'Добавить книгу' })
       :error="error"
       @submit="submit"
     />
-    <div class="mt-4 text-sm text-muted-foreground">
+    <p class="mt-4 text-sm text-muted-foreground">
       После сохранения откроется страница редактирования, где можно загрузить файл PDF/EPUB.
-    </div>
+    </p>
   </div>
 </template>

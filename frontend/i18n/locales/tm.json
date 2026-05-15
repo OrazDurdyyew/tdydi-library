@@ -6,7 +6,19 @@
     "title": "Elektron kitaphana",
     "subtitle": "Bölümler, kitaplar, döwürleýin neşirler",
     "new_books": "Täze kitaplar",
-    "no_books_yet": "Kitaplar entek goşulmadyk."
+    "no_books_yet": "Kitaplar entek goşulmadyk.",
+    "sections": "Bölümler",
+    "collections": "Toplumlar",
+    "latest_news": "Institutyň habarlary",
+    "intro_eyebrow": "kitaphana barada",
+    "intro_title": "Bilim — açyk elýeterli",
+    "intro_text": "Institutyň elektron kitaphanasy okuw kitaplaryny, monografiýalary, döwürleýin neşirleri we usuly serişdeleri bir katalogda jemleýär. Brauzerde onlaýn okaň, bölümler we awtorlar boýunça gözläň, täze gelýän neşirleri yzarlaň — hasaba alynmazdan we çäklendirmesiz.",
+    "explore_title": "Içinde näme bar",
+    "explore_text": "Platformanyň esasy bölümleri",
+    "feat_books": "Okuw kitaplarynyň we monografiýalaryň katalogy — onlaýn okaýjy hem-de bölüm, awtor we ýyl boýunça gözleg bilen.",
+    "feat_periodicals": "Institutyň gazetleri we žurnallary — sanlaryň ýyllyk arhiwi we brauzerde görmek bilen.",
+    "feat_collections": "Synaglara taýýarlyk we çuňňur öwrenmek üçin düzülen tematik kitap toplumlary.",
+    "feat_news": "Institutyň habarlary we wakalary, kitaphananyň bildirişleri we täze neşirleriň anonslary."
   },
   "common": {
     "save": "Ýatda saklamak",
@@ -14,14 +26,140 @@
     "delete": "Pozmak",
     "edit": "Üýtgetmek",
     "search": "Gözleg",
-    "loading": "Ýüklenýär...",
+    "loading": "Ýüklenýär…",
     "back": "Yza",
-    "see_all": "Hemmesi"
+    "see_all": "Hemmesi",
+    "all": "Hemmesi",
+    "not_found": "Tapylmady",
+    "reset": "Arassalamak",
+    "more": "Giňişleýin",
+    "close": "Ýapmak",
+    "nothing_found": "Hiç zat tapylmady"
   },
   "nav": {
     "home": "Baş sahypa",
     "books": "Kitaplar",
     "periodicals": "Döwürleýin neşirler",
-    "news": "Habarlar"
+    "news": "Habarlar",
+    "collections": "Toplumlar",
+    "faq": "Sorag-jogap"
+  },
+  "catalog": {
+    "title": "Kitap katalogy",
+    "found": "Tapyldy: {count}",
+    "filters": "Süzgüçler",
+    "section": "Bölüm",
+    "year": "Neşir ýyly",
+    "author": "Awtor",
+    "language": "Kitabyň dili",
+    "sort": "Tertiplemek",
+    "sort_newest": "Täzeleri öňde",
+    "sort_oldest": "Köneleri öňde",
+    "sort_title": "Ady boýunça",
+    "sort_year": "Ýyly boýunça",
+    "sort_popular": "Meşhurlygy boýunça",
+    "any": "Islendik",
+    "no_results": "Soragyňyza laýyk kitap tapylmady.",
+    "lang_tm": "Türkmen",
+    "lang_ru": "Rus",
+    "lang_en": "Iňlis",
+    "page": "{total} sahypadan {page}-nji"
+  },
+  "section": {
+    "subsections": "Kömekçi bölümler",
+    "books": "Bölümiň kitaplary",
+    "no_books": "Bu bölümde entek kitap ýok.",
+    "no_subsections": "Kömekçi bölüm ýok.",
+    "browse": "Bölümi açmak"
+  },
+  "book": {
+    "annotation": "Annotasiýa",
+    "details": "Neşir baradaky maglumat",
+    "authors": "Awtorlar",
+    "year": "Ýyl",
+    "publisher": "Neşirýat",
+    "isbn": "ISBN",
+    "pages": "Sahypalar",
+    "language": "Dil",
+    "in_sections": "Bölümler",
+    "read": "Onlaýn okamak",
+    "download": "Ýüklemek",
+    "download_off": "Ýüklemek elýeterli däl",
+    "similar": "Meňzeş kitaplar",
+    "views": "Görülen",
+    "downloads": "Ýüklenen",
+    "no_file": "Faýl entek ýüklenmedik.",
+    "share": "Paýlaşmak",
+    "qr_hint": "Telefonda açmak üçin skanirläň"
+  },
+  "reader": {
+    "loading": "Resminama ýüklenýär…",
+    "page": "Sahypa",
+    "of": "/",
+    "prev": "Öňki",
+    "next": "Indiki",
+    "bookmark": "Bellik dikeldildi",
+    "close": "Okaýjyny ýapmak",
+    "download": "Ýüklemek"
+  },
+  "periodicals": {
+    "title": "Döwürleýin neşirler",
+    "all": "Hemmesi",
+    "newspapers": "Gazetler",
+    "magazines": "Žurnallar",
+    "issues": "Sanlar",
+    "issue": "San",
+    "archive": "Arhiw",
+    "no_issues": "Sanlar entek ýok.",
+    "periodicity": "Çykyş ýygylygy",
+    "no_periodicals": "Neşirler entek ýok.",
+    "newspaper": "Gazet",
+    "magazine": "Žurnal",
+    "read": "Sany okamak",
+    "issue_date": "Çykan senesi"
+  },
+  "news": {
+    "title": "Habarlar",
+    "by": "Awtor",
+    "published": "Çap edildi",
+    "read_more": "Dowamyny okamak",
+    "no_news": "Habarlar entek ýok.",
+    "back_to_news": "Ähli habarlara"
+  },
+  "collections": {
+    "title": "Wirtual toplumlar",
+    "books_count": "Kitaplar: {count}",
+    "no_collections": "Toplumlar entek ýok.",
+    "in_collection": "Toplumyň kitaplary",
+    "empty": "Toplumda entek kitap ýok."
+  },
+  "faq": {
+    "title": "Sorag-jogap",
+    "subtitle": "Kitaphana baradaky ýygy soraglara jogaplar",
+    "empty": "Soraglar entek goşulmadyk.",
+    "search_placeholder": "Soraglardan gözleg…"
+  },
+  "search": {
+    "title": "Gözleg",
+    "placeholder": "Näme gözleýärsiňiz?",
+    "results_for": "«{query}» boýunça netijeler",
+    "books": "Kitaplar",
+    "periodicals": "Döwürleýin neşirler",
+    "news": "Habarlar",
+    "faq": "Sorag-jogap",
+    "pages": "Sahypalar",
+    "nothing": "Soragyňyz boýunça hiç zat tapylmady.",
+    "type_query": "Gözlege başlamak üçin sorag ýazyň."
+  },
+  "page": {
+    "not_found_title": "Sahypa tapylmady",
+    "not_found_text": "Sahypa göçürilen ýa-da pozulan bolmagy mümkin.",
+    "go_home": "Baş sahypa"
+  },
+  "footer": {
+    "navigation": "Nawigasiýa",
+    "contacts": "Aragatnaşyk",
+    "follow": "Bizi yzarlaň",
+    "rights": "Ähli hukuklar goralan"
   }
 }

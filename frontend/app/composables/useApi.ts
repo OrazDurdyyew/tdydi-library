@@ -35,6 +35,12 @@ export const useApi = () => {
       const formData = new FormData()
       formData.append('file', file)
       return request<T>(path, { method: 'POST', body: formData })
+    },
+    // uploadField — multipart-загрузка с произвольным именем поля (image, cover, file…).
+    uploadField: <T>(path: string, field: string, file: File) => {
+      const formData = new FormData()
+      formData.append(field, file)
+      return request<T>(path, { method: 'POST', body: formData })
     }
   }
 }

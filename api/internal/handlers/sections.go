@@ -31,6 +31,7 @@ type SectionDTO struct {
 }
 
 // List возвращает разделы. Опциональный параметр: ?parent_id=N или ?parent_id=null.
+// Для каждого раздела заполняется book_count (книги, привязанные напрямую).
 func (h *SectionsHandler) List(c *fiber.Ctx) error {
 	q := h.db.Model(&models.Section{}).Order("sort_order ASC, id ASC")
 	if p := c.Query("parent_id"); p != "" {
@@ -48,7 +49,17 @@ func (h *SectionsHandler) List(c *fiber.Ctx) error {
 	if err := q.Find(&sections).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
+	for i := range sections {
+		sections[i].BookCount = h.countBooks(sections[i].ID)
+	}
 	return c.JSON(fiber.Map{"data": sections})
+}
+
+// countBooks возвращает количество книг, привязанных напрямую к разделу.
+func (h *SectionsHandler) countBooks(sectionID int64) int64 {
+	var n int64
+	h.db.Model(&models.BookSection{}).Where("section_id = ?", sectionID).Count(&n)
+	return n
 }
 
 func (h *SectionsHandler) Get(c *fiber.Ctx) error {
@@ -63,13 +74,62 @@ func (h *SectionsHandler) Get(c *fiber.Ctx) error {
 	return c.JSON(s)
 }
 
+// GetBySlug — публичная страница раздела: сам раздел (+ родитель для хлебных крошек),
+// его подразделы (карточки с book_count) и книги, привязанные непосредственно к разделу.
 func (h *SectionsHandler) GetBySlug(c *fiber.Ctx) error {
 	slug := c.Params("slug")
 	var s models.Section
-	if err := h.db.Preload("Children", orderBySortOrder).Where("slug = ?", slug).First(&s).Error; err != nil {
+	if err := h.db.Preload("Children", orderBySortOrder).Preload("Parent").
+		Where("slug = ?", slug).First(&s).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{"error": "not found"})
 	}
-	return c.JSON(s)
+
+	s.BookCount = h.countBooks(s.ID)
+	for i := range s.Children {
+		s.Children[i].BookCount = h.countBooks(s.Children[i].ID)
+	}
+
+	bq := h.db.Model(&models.Book{}).
+		Joins("JOIN book_sections bs ON bs.book_id = books.id").
+		Where("bs.section_id = ?", s.ID)
+	if c.Locals("admin_id") == nil {
+		bq = bq.Where("books.is_published = ?", true)
+	}
+	var books []models.Book
+	bq.Preload("Sections").Order("books.created_at DESC").Find(&books)
+
+	return c.JSON(fiber.Map{"section": s, "books": books})
+}
+
+// Reorder — drag-and-drop переупорядочивание разделов в админке.
+// Принимает {items: [{id, parent_id, sort_order}, ...]}.
+func (h *SectionsHandler) Reorder(c *fiber.Ctx) error {
+	var body struct {
+		Items []struct {
+			ID        int64  `json:"id"`
+			ParentID  *int64 `json:"parent_id"`
+			SortOrder int    `json:"sort_order"`
+		} `json:"items"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "invalid request"})
+	}
+	err := h.db.Transaction(func(tx *gorm.DB) error {
+		for _, it := range body.Items {
+			if err := tx.Model(&models.Section{}).Where("id = ?", it.ID).
+				Updates(map[string]interface{}{
+					"parent_id":  it.ParentID,
+					"sort_order": it.SortOrder,
+				}).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(fiber.Map{"status": "ok"})
 }
 
 func (h *SectionsHandler) Create(c *fiber.Ctx) error {

@@ -3,6 +3,7 @@ definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
 const api = useApi()
+const toast = useToast()
 const localePath = useLocalePath()
 const id = Number(route.params.id)
 
@@ -36,6 +37,7 @@ async function submit() {
   error.value = ''
   try {
     await api.put(`/admin/sections/${id}`, form)
+    toast.success('Раздел сохранён')
     await navigateTo(localePath('/admin/sections'))
   } catch (e: any) {
     error.value = e.data?.error || 'Ошибка сохранения'
@@ -44,12 +46,16 @@ async function submit() {
   }
 }
 
-useHead({ title: `Изм. раздела: ${section.value?.name_ru}` })
+useHead({ title: `Раздел: ${section.value?.name_ru}` })
 </script>
 
 <template>
   <div>
-    <h1 class="text-2xl font-bold mb-6">Редактировать раздел</h1>
+    <div class="flex items-center gap-3 mb-6">
+      <NuxtLink to="/admin/sections" class="text-muted-foreground hover:text-foreground text-sm">← Разделы</NuxtLink>
+      <span class="text-muted-foreground">/</span>
+      <h1 class="text-2xl font-bold font-serif">{{ section?.name_ru || section?.name_tm }}</h1>
+    </div>
     <SectionForm
       v-model="form"
       :root-sections="rootSections"

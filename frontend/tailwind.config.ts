@@ -13,7 +13,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        serif: ['"Playfair Display"', 'Georgia', '"Times New Roman"', 'serif']
+        serif: ['"Source Serif 4"', 'Georgia', '"Times New Roman"', 'serif']
       },
       colors: {
         background: 'rgb(var(--background) / <alpha-value>)',
@@ -60,10 +60,10 @@ export default {
         sm: 'calc(var(--radius) - 4px)'
       },
       boxShadow: {
-        'book': '2px 2px 10px rgba(0, 0, 0, 0.1), inset 0 0 1px rgba(0, 0, 0, 0.05)',
-        'book-hover': '6px 10px 24px rgba(0, 0, 0, 0.18), inset 0 0 1px rgba(0, 0, 0, 0.05)',
-        'paper': '2px 2px 10px rgba(0, 0, 0, 0.08), inset 0 0 1px rgba(0, 0, 0, 0.04)',
-        'niche': 'inset 0 2px 6px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.6)'
+        'book': '0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04)',
+        'book-hover': '0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04)',
+        'paper': '0 1px 2px rgba(15, 23, 42, 0.05)',
+        'niche': 'inset 0 1px 2px rgba(15, 23, 42, 0.06)'
       }
     }
   }

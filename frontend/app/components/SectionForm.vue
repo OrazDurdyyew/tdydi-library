@@ -37,92 +37,103 @@ const form = computed({
 })
 
 const availableParents = computed(() =>
-  props.rootSections.filter((s) => s.parent_id === null && s.id !== props.excludeId)
+  props.rootSections.filter((s) => s.parent_id == null && s.id !== props.excludeId)
 )
 </script>
 
 <template>
   <form @submit.prevent="emit('submit')" class="space-y-6 max-w-3xl">
-    <div class="card space-y-5">
-      <div>
-        <label class="block text-sm font-medium mb-2">Slug *</label>
-        <input
-          v-model="form.slug"
-          required
-          class="input font-mono text-sm"
-          placeholder="economics"
-        />
-        <div class="text-xs text-muted-foreground mt-1.5">
-          Используется в URL: /sections/{slug}. Должен быть уникальным.
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-lg">Основное</CardTitle>
+      </CardHeader>
+      <CardContent class="space-y-5">
+        <div class="space-y-2">
+          <Label for="sec-slug">Slug *</Label>
+          <Input id="sec-slug" v-model="form.slug" required class="font-mono" placeholder="economics" />
+          <p class="text-xs text-muted-foreground">
+            Используется в URL: /sections/{slug}. Должен быть уникальным.
+          </p>
         </div>
-      </div>
 
-      <div>
-        <label class="block text-sm font-medium mb-2">Родительский раздел</label>
-        <select v-model="form.parent_id" class="input">
-          <option :value="null">— (корневой раздел в меню)</option>
-          <option v-for="s in availableParents" :key="s.id" :value="s.id">
-            {{ s.name_ru }}
-          </option>
-        </select>
-        <div class="text-xs text-muted-foreground mt-1.5">
-          Если пусто — будет показан в главном меню. Иначе — как подраздел в dropdown.
+        <div class="space-y-2">
+          <Label for="sec-parent">Родительский раздел</Label>
+          <Select id="sec-parent" v-model="form.parent_id">
+            <option :value="null">— (корневой раздел в меню)</option>
+            <option v-for="s in availableParents" :key="s.id" :value="s.id">
+              {{ s.name_ru }}
+            </option>
+          </Select>
+          <p class="text-xs text-muted-foreground">
+            Если пусто — будет показан в главном меню. Иначе — как подраздел в dropdown.
+          </p>
         </div>
-      </div>
 
-      <div>
-        <label class="block text-sm font-medium mb-2">Порядок в меню</label>
-        <input
-          v-model.number="form.sort_order"
-          type="number"
-          class="input w-32"
-        />
-      </div>
-    </div>
+        <div class="space-y-2">
+          <Label for="sec-order">Порядок в меню</Label>
+          <Input id="sec-order" v-model.number="form.sort_order" type="number" class="w-32" />
+        </div>
+      </CardContent>
+    </Card>
 
-    <div class="card space-y-5">
-      <h3 class="font-semibold">Названия на 3 языках</h3>
-      <div class="grid grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-2">TM *</label>
-          <input v-model="form.name_tm" required class="input" />
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-lg">Названия на 3 языках</CardTitle>
+      </CardHeader>
+      <CardContent class="space-y-5">
+        <div class="grid grid-cols-3 gap-4">
+          <div class="space-y-2">
+            <Label for="sec-name-tm">TM *</Label>
+            <Input id="sec-name-tm" v-model="form.name_tm" required />
+          </div>
+          <div class="space-y-2">
+            <Label for="sec-name-ru">RU *</Label>
+            <Input id="sec-name-ru" v-model="form.name_ru" required />
+          </div>
+          <div class="space-y-2">
+            <Label for="sec-name-en">EN *</Label>
+            <Input id="sec-name-en" v-model="form.name_en" required />
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium mb-2">RU *</label>
-          <input v-model="form.name_ru" required class="input" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-2">EN *</label>
-          <input v-model="form.name_en" required class="input" />
-        </div>
-      </div>
+      </CardContent>
+    </Card>
 
-      <h3 class="font-semibold pt-2">Описания на 3 языках</h3>
-      <div class="grid grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-2">TM</label>
-          <textarea v-model="form.description_tm" rows="3" class="input"></textarea>
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-lg">Описания на 3 языках</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="grid grid-cols-3 gap-4">
+          <div class="space-y-2">
+            <Label for="sec-desc-tm">TM</Label>
+            <Textarea id="sec-desc-tm" v-model="form.description_tm" rows="3" />
+          </div>
+          <div class="space-y-2">
+            <Label for="sec-desc-ru">RU</Label>
+            <Textarea id="sec-desc-ru" v-model="form.description_ru" rows="3" />
+          </div>
+          <div class="space-y-2">
+            <Label for="sec-desc-en">EN</Label>
+            <Textarea id="sec-desc-en" v-model="form.description_en" rows="3" />
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium mb-2">RU</label>
-          <textarea v-model="form.description_ru" rows="3" class="input"></textarea>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-2">EN</label>
-          <textarea v-model="form.description_en" rows="3" class="input"></textarea>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
 
-    <div v-if="error" class="text-sm text-red-600 p-3 bg-red-50 rounded-lg">
+    <div
+      v-if="error"
+      class="text-sm text-destructive p-3 bg-destructive/10 border border-destructive/20 rounded-lg"
+    >
       {{ error }}
     </div>
 
     <div class="flex gap-3">
-      <button type="submit" :disabled="loading" class="btn-primary">
+      <Button type="submit" :disabled="loading">
         {{ loading ? 'Сохранение…' : 'Сохранить' }}
-      </button>
-      <NuxtLink to="/admin/sections" class="btn-outline">Отмена</NuxtLink>
+      </Button>
+      <NuxtLink to="/admin/sections">
+        <Button type="button" variant="outline">Отмена</Button>
+      </NuxtLink>
     </div>
   </form>
 </template>

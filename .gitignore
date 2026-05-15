@@ -13,6 +13,7 @@ frontend/.nuxt/
 frontend/.output/
 frontend/.cache/
 frontend/dist/
+frontend/.pnpm-store/
 # components/ui/ — НЕ игнорируем: shadcn-философия "you own the code",
 # компоненты копируются в проект и кастомизируются под нужды
 
@@ -33,3 +34,5 @@ storage/
 # Logs
 *.log
 logs/
+
+graphify-out
