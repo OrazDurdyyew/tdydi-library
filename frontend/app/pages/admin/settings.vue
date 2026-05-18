@@ -341,6 +341,10 @@ useHead({ title: 'Настройки сайта' })
       <Card>
         <CardHeader>
           <CardTitle class="text-lg">Шрифт</CardTitle>
+          <CardDescription>
+            Выберите стандартный шрифт или
+            <NuxtLink to="/admin/settings/font" class="underline text-primary">загрузите собственный</NuxtLink>.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div class="space-y-2 max-w-xs">
@@ -353,6 +357,10 @@ useHead({ title: 'Настройки сайта' })
               <option value="Montserrat">Montserrat</option>
               <option value="PT Sans">PT Sans</option>
             </Select>
+          </div>
+          <div v-if="settings?.font_file_path || settings?.font_url" class="mt-3 text-sm text-muted-foreground flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+            Пользовательский шрифт загружен: <strong>{{ settings?.font_family }}</strong>
           </div>
         </CardContent>
       </Card>

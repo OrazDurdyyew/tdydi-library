@@ -23,6 +23,9 @@ export interface SiteSettings {
   dark_border_color: string
   dark_ring_color: string
   font_family: string
+  font_file_path?: string
+  font_url?: string
+  font_uploaded_at?: string
   contact_address?: string
   contact_phone?: string
   contact_email?: string

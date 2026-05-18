@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/datatypes"
@@ -53,6 +54,7 @@ type SiteSettingsDTO struct {
 	DarkBorderColor     string     `json:"dark_border_color"`
 	DarkRingColor       string     `json:"dark_ring_color"`
 	FontFamily      string         `json:"font_family"`
+	FontURL         string         `json:"font_url"`
 	ContactAddress  string         `json:"contact_address"`
 	ContactPhone    string         `json:"contact_phone"`
 	ContactEmail    string         `json:"contact_email"`
@@ -94,6 +96,7 @@ func (h *SiteSettingsHandler) Update(c *fiber.Ctx) error {
 		"dark_border_color":     dto.DarkBorderColor,
 		"dark_ring_color":       dto.DarkRingColor,
 		"font_family":      dto.FontFamily,
+		"font_url":         dto.FontURL,
 		"contact_address":  dto.ContactAddress,
 		"contact_phone":    dto.ContactPhone,
 		"contact_email":    dto.ContactEmail,
@@ -146,4 +149,75 @@ func (h *SiteSettingsHandler) UploadAsset(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(fiber.Map{"path": rel})
+}
+
+// UploadFont — POST /api/admin/site-settings/font
+// Сохраняет файл шрифта в fonts/ и обновляет соответствующий путь в site_settings.
+func (h *SiteSettingsHandler) UploadFont(c *fiber.Ctx) error {
+	fh, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "file field is required"})
+	}
+
+	// Проверяем расширение файла
+	ext := strings.ToLower(filepath.Ext(fh.Filename))
+	allowed := []string{".ttf", ".otf", ".woff", ".woff2", ".eot"}
+	valid := false
+	for _, a := range allowed {
+		if ext == a {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return c.Status(400).JSON(fiber.Map{"error": "only font files are allowed (ttf, otf, woff, woff2, eot)"})
+	}
+
+	// Генерируем уникальное имя файла
+	fontName := strings.TrimSuffix(filepath.Base(fh.Filename), ext)
+	rel := fmt.Sprintf("fonts/%s-%d%s", fontName, time.Now().Unix(), ext)
+	
+	if err := h.files.SaveUpload(fh, rel); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	// Обновляем запись в базе
+	updates := map[string]interface{}{
+		"font_file_path":   rel,
+		"font_uploaded_at": time.Now(),
+	}
+	if err := h.db.Model(&models.SiteSettings{}).Where("id = ?", 1).Updates(updates).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	// Возвращаем путь к файлу
+	return c.JSON(fiber.Map{"path": rel})
+}
+
+// DeleteFont — DELETE /api/admin/site-settings/font
+// Удаляет загруженный файл шрифта и очищает поля в site_settings.
+func (h *SiteSettingsHandler) DeleteFont(c *fiber.Ctx) error {
+	var s models.SiteSettings
+	if err := h.db.First(&s, 1).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	// Удаляем файл, если он существует
+	if s.FontFilePath != "" {
+		if err := h.files.Remove(s.FontFilePath); err != nil {
+			// Не прерываем выполнение, если файл не найден
+			fmt.Printf("Warning: could not delete font file %s: %v\n", s.FontFilePath, err)
+		}
+	}
+
+	// Очищаем поля в базе
+	updates := map[string]interface{}{
+		"font_file_path":   nil,
+		"font_uploaded_at": nil,
+	}
+	if err := h.db.Model(&models.SiteSettings{}).Where("id = ?", 1).Updates(updates).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"message": "font deleted successfully"})
 }

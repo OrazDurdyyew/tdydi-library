@@ -36,6 +36,9 @@ type SiteSettings struct {
 	DarkBorderColor     string `gorm:"size:32;not null;default:'31 41 55'" json:"dark_border_color"`
 	DarkRingColor       string `gorm:"size:32;not null;default:'122 162 201'" json:"dark_ring_color"`
 	FontFamily      string         `gorm:"size:255;not null;default:'Inter'" json:"font_family"`
+	FontFilePath    string         `gorm:"type:text" json:"font_file_path,omitempty"`
+	FontURL         string         `gorm:"type:text" json:"font_url,omitempty"`
+	FontUploadedAt  time.Time      `json:"font_uploaded_at,omitempty"`
 	ContactAddress  string         `gorm:"type:text" json:"contact_address,omitempty"`
 	ContactPhone    string         `gorm:"size:64" json:"contact_phone,omitempty"`
 	ContactEmail    string         `gorm:"size:255" json:"contact_email,omitempty"`

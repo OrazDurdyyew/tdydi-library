@@ -117,6 +117,8 @@ func Register(app *fiber.App, db *gorm.DB, tm *auth.TokenManager, files *service
 	// ── Site settings ─────────────────────────────────────────────────────
 	admin.Put("/site-settings", super, settingsH.Update)
 	admin.Post("/site-settings/asset", super, settingsH.UploadAsset)
+	admin.Post("/site-settings/font", super, settingsH.UploadFont)
+	admin.Delete("/site-settings/font", super, settingsH.DeleteFont)
 
 	// ── Sections ──────────────────────────────────────────────────────────
 	admin.Post("/sections", super, sectionsH.Create)
