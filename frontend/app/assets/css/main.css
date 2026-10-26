@@ -1,0 +1,371 @@
+/* =====================================================
+   Ýerli şriftler (offline) — Google Fonts ýok
+   ===================================================== */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/Inter-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/Inter-Medium.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/Inter-SemiBold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/Inter-Bold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/SourceSerif4-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/SourceSerif4-Medium.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/SourceSerif4-SemiBold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/SourceSerif4-Italic.woff2') format('woff2');
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Академическая электронная библиотека — спокойная, читаемая, типографичная.
+   Дизайн-система: navy + gold, Inter (UI/заголовки) + Source Serif 4 (текст для чтения). */
+
+@layer base {
+  :root {
+    /* Поверхности */
+    --background: 248 250 252;          /* #F8FAFC */
+    --foreground: 17 24 39;             /* #111827 */
+    --card: 255 255 255;                /* #FFFFFF */
+    --card-foreground: 17 24 39;
+    --popover: 255 255 255;
+    --popover-foreground: 17 24 39;
+    --muted: 241 245 249;               /* #F1F5F9 */
+    --muted-foreground: 107 114 128;    /* #6B7280 */
+
+    /* Бренд */
+    --primary: 30 58 95;                /* #1E3A5F — глубокий navy */
+    --primary-foreground: 255 255 255;
+    --secondary: 44 95 141;             /* #2C5F8D */
+    --secondary-foreground: 255 255 255;
+    --accent: 200 169 107;              /* #C8A96B — приглушённое золото */
+    --accent-foreground: 30 58 95;
+
+    --destructive: 185 28 28;           /* #B91C1C — сдержанный красный */
+    --destructive-foreground: 255 255 255;
+
+    --border: 229 231 235;              /* #E5E7EB */
+    --input: 229 231 235;
+    --ring: 44 95 141;                  /* secondary */
+
+    /* Совместимость со старыми именами токенов */
+    --paper: 248 250 252;
+    --paper-deep: 241 245 249;
+    --ink: 17 24 39;
+    --wood: 30 58 95;                   /* боковая панель админки = navy */
+    --ribbon: 200 169 107;
+
+    --radius: 0.625rem;                 /* rounded-lg */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --font-family: var(--font-sans);
+  }
+
+  .dark {
+    --background: 15 23 42;             /* #0F172A */
+    --foreground: 249 250 251;          /* #F9FAFB */
+    --card: 17 24 39;                   /* #111827 */
+    --card-foreground: 249 250 251;
+    --popover: 17 24 39;
+    --popover-foreground: 249 250 251;
+    --muted: 30 41 59;                  /* #1E293B */
+    --muted-foreground: 156 163 175;    /* #9CA3AF */
+
+    --primary: 122 162 201;            /* светлее navy для читаемости на тёмном */
+    --primary-foreground: 15 23 42;
+    --secondary: 96 141 184;
+    --secondary-foreground: 15 23 42;
+    --accent: 200 169 107;
+    --accent-foreground: 15 23 42;
+
+    --destructive: 220 100 100;
+    --destructive-foreground: 15 23 42;
+
+    --border: 31 41 55;                /* #1F2937 */
+    --input: 31 41 55;
+    --ring: 122 162 201;
+
+    --paper: 15 23 42;
+    --paper-deep: 17 24 39;
+    --ink: 249 250 251;
+    --wood: 17 24 39;
+    --ribbon: 200 169 107;
+  }
+
+  * {
+    border-color: rgb(var(--border));
+  }
+
+  html {
+    font-family: var(--font-sans);
+    background-color: rgb(var(--background));
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply text-foreground;
+    background-color: rgb(var(--background));
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Заголовки — Inter, как требует дизайн-система (serif только для текста статей). */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.011em;
+    color: rgb(var(--foreground));
+  }
+  h1 { font-weight: 700; letter-spacing: -0.02em; }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ::selection {
+    background-color: rgb(var(--secondary) / 0.2);
+    color: rgb(var(--foreground));
+  }
+
+  /* Видимый фокус для доступности */
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* === Контейнер === */
+  .page-container {
+    @apply mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: 80rem; /* max-w-7xl */
+  }
+
+  /* === Типографика === */
+  .serif {
+    font-family: var(--font-serif);
+  }
+  .small-caps {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  /* Надзаголовок-метка — сдержанный, без декоративности */
+  .eyebrow {
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: rgb(var(--muted-foreground));
+  }
+
+  /* === Разделители === */
+  .divider-double {
+    height: 1px;
+    border: 0;
+    background-color: rgb(var(--border));
+  }
+  .divider-ornament {
+    @apply flex items-center my-8;
+  }
+  .divider-ornament::before,
+  .divider-ornament::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: rgb(var(--border));
+  }
+  .divider-ornament-glyph {
+    padding: 0 1rem;
+    font-size: 0.8rem;
+    color: rgb(var(--muted-foreground));
+  }
+
+  /* Лента-закладка — наследие старого дизайна, в академической теме не рисуется */
+  .ribbon::before,
+  .ribbon-flat::before {
+    display: none;
+  }
+
+  /* === Кнопки === */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    min-height: 2.5rem;
+  }
+  .btn-primary {
+    @apply btn bg-primary text-primary-foreground hover:bg-secondary;
+  }
+  .btn-outline {
+    @apply btn bg-card text-foreground border border-border hover:bg-muted;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-foreground hover:bg-muted;
+  }
+  .btn-danger {
+    @apply btn bg-destructive text-destructive-foreground hover:opacity-90;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+    min-height: 2rem;
+  }
+
+  /* === Поля ввода === */
+  .input {
+    @apply w-full px-3.5 py-2.5 bg-card border border-input rounded-lg text-sm outline-none transition-colors placeholder:text-muted-foreground;
+    min-height: 2.5rem;
+  }
+  .input:focus {
+    border-color: rgb(var(--ring));
+    box-shadow: 0 0 0 3px rgb(var(--ring) / 0.12);
+  }
+
+  /* === Карточки === */
+  .card,
+  .paper-card {
+    @apply bg-card border border-border rounded-xl;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  }
+  .paper-card {
+    @apply p-6;
+  }
+  .card-flat {
+    @apply bg-card rounded-xl border border-border p-6;
+  }
+  .card-hover {
+    @apply transition-all duration-200;
+  }
+  .card-hover:hover {
+    border-color: rgb(var(--secondary) / 0.4);
+    box-shadow: 0 4px 12px rgb(15 23 42 / 0.06);
+    transform: translateY(-2px);
+  }
+
+  /* Карточка-обложка книги — чистая, без скевоморфизма */
+  .book-card {
+    @apply bg-muted border border-border rounded-lg overflow-hidden transition-all duration-200;
+  }
+  .book-card:hover {
+    border-color: rgb(var(--secondary) / 0.5);
+    box-shadow: 0 6px 16px rgb(15 23 42 / 0.1);
+    transform: translateY(-2px);
+  }
+
+  /* Спейсер под фиксированный header больше не нужен — header в потоке */
+  .app-header-spacer {
+    display: none;
+  }
+
+  /* === Боковая панель админки — повторяет тему (light/dark) сайта === */
+  .book-spine {
+    @apply relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors;
+    color: rgb(var(--muted-foreground));
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  .book-spine:hover {
+    background-color: rgb(var(--muted));
+    color: rgb(var(--foreground));
+  }
+  .book-spine.router-link-active,
+  .book-spine.router-link-exact-active {
+    background-color: rgb(var(--primary) / 0.12);
+    color: rgb(var(--primary));
+    box-shadow: inset 3px 0 0 rgb(var(--primary));
+  }
+
+  /* === Прочее === */
+  .section-title {
+    @apply text-2xl md:text-3xl font-bold tracking-tight mb-6;
+  }
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium;
+  }
+  .badge-success {
+    @apply badge;
+    background-color: rgb(var(--secondary) / 0.12);
+    color: rgb(var(--secondary));
+  }
+  .badge-warning {
+    @apply badge;
+    background-color: rgb(var(--accent) / 0.2);
+    color: rgb(var(--accent-foreground));
+  }
+}
+
+@layer utilities {
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .icon-primary { color: rgb(var(--secondary)); }
+  .text-ink { color: rgb(var(--ink)); }
+  .bg-paper { background-color: rgb(var(--paper)); }
+  .bg-paper-deep { background-color: rgb(var(--paper-deep)); }
+  .bg-wood { background-color: rgb(var(--wood)); }
+}

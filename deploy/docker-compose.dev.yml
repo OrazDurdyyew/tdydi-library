@@ -1,0 +1,81 @@
+# Development environment with hot-reload
+# Запуск из /deploy:
+#   docker compose -f docker-compose.dev.yml up -d
+#
+# Что делает:
+#   - PostgreSQL с расширениями pg_trgm, unaccent
+#   - Go API через air (hot-reload)
+#   - Nuxt dev-сервер с HMR
+#   - Bind-mounts кода для live-редактирования
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: library
+      POSTGRES_PASSWORD: library
+      POSTGRES_DB: library
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U library"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: golang:1.23-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    working_dir: /build
+    volumes:
+      - ../api:/build
+      - go-mod-cache:/go/pkg/mod
+      - library-storage-dev:/var/library
+    environment:
+      DATABASE_URL: postgres://library:library@postgres:5432/library?sslmode=disable
+      JWT_SECRET: dev-secret-not-for-production
+      STORAGE_PATH: /var/library
+      API_PORT: 2020
+      ALLOWED_ORIGINS: http://localhost:2026
+      CGO_ENABLED: "0"
+      GOPROXY: https://goproxy.io,https://goproxy.cn,https://proxy.golang.org,direct
+      GOSUMDB: "off"
+    command: >
+      sh -c "until apk add --no-cache git poppler-utils; do echo 'retry apk'; sleep 3; done &&
+             until go install github.com/air-verse/air@v1.61.7; do echo 'retry air install'; sleep 3; done &&
+             until go mod download; do echo 'retry mod download'; sleep 3; done &&
+             air"
+    ports:
+      - "2020:2020"
+
+  frontend:
+    image: node:22-alpine
+    depends_on:
+      - api
+    working_dir: /build
+    volumes:
+      - ../frontend:/build
+      - node-modules-dev:/build/node_modules
+    environment:
+      NUXT_PUBLIC_API_BASE: http://localhost:2020/api
+      API_BASE_INTERNAL: http://api:2020/api
+      HOST: 0.0.0.0
+      PORT: "2026"
+    command: >
+      sh -c "corepack enable &&
+             corepack prepare pnpm@10.26.0 --activate &&
+             pnpm install --frozen-lockfile &&
+             pnpm dev"
+    ports:
+      - "2026:2026"
+
+volumes:
+  postgres-data-dev:
+  library-storage-dev:
+  go-mod-cache:
+  node-modules-dev:

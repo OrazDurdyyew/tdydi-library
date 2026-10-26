@@ -1,0 +1,40 @@
+export interface SiteSettings {
+  id: number
+  name_tm: string
+  name_ru: string
+  name_en: string
+  logo_light_path?: string
+  logo_dark_path?: string
+  favicon_path?: string
+  primary_color: string
+  secondary_color: string
+  accent_color: string
+  background_color: string
+  foreground_color: string
+  muted_color: string
+  border_color: string
+  ring_color: string
+  dark_primary_color: string
+  dark_secondary_color: string
+  dark_accent_color: string
+  dark_background_color: string
+  dark_foreground_color: string
+  dark_muted_color: string
+  dark_border_color: string
+  dark_ring_color: string
+  font_family: string
+  font_file_path?: string
+  font_url?: string
+  font_uploaded_at?: string
+  contact_address?: string
+  contact_phone?: string
+  contact_email?: string
+  social_links?: Record<string, string>
+  footer_tm: string
+  footer_ru: string
+  footer_en: string
+}
+
+export const useSiteSettings = () => {
+  return useState<SiteSettings | null>('site_settings', () => null)
+}
